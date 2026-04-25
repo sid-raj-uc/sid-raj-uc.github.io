@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procedural 3D Physics & LSCM Parameterization | Portfolio</title>
+    <meta name="description" content="A 100% Python-driven procedural animation built within Blender's API, featuring custom LSCM UV unwrapping and B-Spline physics.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Highlight.js for Code Snippets -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav style="position:fixed;top:0;left:0;right:0;z-index:999;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;background:rgba(5,9,26,0.85);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.05);">
+        <div style="display:flex;align-items:center;gap:1.5rem">
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.2rem;color:#fff;">Mesh<span style="color:#00e5ff;">Parameterization</span></div>
+            <a href="../" class="btn secondary" style="font-size:0.85rem;padding:0.4rem 1rem">← Portfolio</a>
+        </div>
+        <a href="https://github.com/sid-raj-uc/cg-animation" class="btn secondary" target="_blank" style="font-size:0.85rem;padding:0.4rem 1rem">View GitHub</a>
+    </nav>
+
+    <!-- Dynamic Background -->
+    <div class="stars-bg" id="stars"></div>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="glitch-text" data-text="Procedural 3D Physics">Procedural 3D Physics</h1>
+            <h2>& Conformal Mesh Parameterization</h2>
+            <p>A completely Python-driven, procedural animation built directly within the Blender C++ API. Showcasing mathematical mesh flattening (LSCM), custom B-Spline bouncing physics, and procedural shaders.</p>
+            <div class="hero-buttons">
+                <a href="#demo" class="btn primary">Watch Animation</a>
+                <a href="#architecture" class="btn secondary">View Technical Specs</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Project Demo Section -->
+        <section id="demo" class="glass-panel">
+            <div class="section-header">
+                <h2>The Final Render</h2>
+                <div class="neon-line"></div>
+            </div>
+            <div class="video-container">
+                <video controls autoplay loop muted playsinline>
+                    <source src="assets/animation.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <div class="feature-pills">
+                <span class="pill">Python</span>
+                <span class="pill">Blender API</span>
+                <span class="pill">SciPy Sparse</span>
+                <span class="pill">Linear Algebra</span>
+            </div>
+        </section>
+
+        <!-- Technical Deep Dive -->
+        <section id="architecture" class="technical-grid">
+            
+            <!-- LSCM Parameterization -->
+            <div class="glass-panel feature-card">
+                <div class="card-content">
+                    <h3>Least Squares Conformal Maps (LSCM)</h3>
+                    <p>Bypassing Blender's internal unwrap API entirely, I developed a custom Python implementation of the LSCM algorithm. By solving the Cauchy-Riemann equations across a massive sparse matrix using `scipy.sparse`, this algorithm calculates optimal, angle-preserving 2D UV coordinates for thousands of vertices.</p>
+                    <ul class="tech-list">
+                        <li><span>✓</span> Conformal angle preservation for 3D-to-2D mapping</li>
+                        <li><span>✓</span> Custom Sparse Matrix solver (A^T A x = A^T b)</li>
+                        <li><span>✓</span> Pinning furthest vertices to prevent collapsing</li>
+                    </ul>
+                </div>
+                <div class="card-visual">
+                    <img src="assets/lscm_diagram.png" alt="LSCM Diagram Mapping">
+                </div>
+            </div>
+
+            <!-- B-Spline Physics -->
+            <div class="glass-panel feature-card reverse">
+                <div class="card-content">
+                    <h3>Custom B-Spline Physics & Transitions</h3>
+                    <p>Standard physics engines lack exact deterministic timing. To precisely end the bouncing at Frame 70, I implemented custom quadratic (Degree 2) B-Splines to perfectly parameterize parabolic bouncing arcs. Utilizing knot multiplicity, mathematical continuity drops to $C^0$ upon hitting the floor, ensuring sharp, physically accurate impacts.</p>
+                    <ul class="tech-list">
+                        <li><span>✓</span> Degree-2 B-Splines for sharp floor impacts ($C^0$ continuity)</li>
+                        <li><span>✓</span> Degree-3 B-Splines for smooth $C^2$ ease-in texture fading</li>
+                        <li><span>✓</span> Procedural Particle System triggers at exact rest frame</li>
+                    </ul>
+                </div>
+                <div class="card-visual code-visual">
+                    <pre><code class="language-python"># Example of Knot Multiplicity to force C0 sharp impact
+knots = [0, 0, 0, 1, 2, 2, 3, 4, 4, 5, 6, 6, 7, 7, 7]
+# The repeated knots at the impacts break the smoothness
+# and force the curve to interpolate exactly at the floor height.
+
+def get_bounce_z(t, control_pts):
+    return bspline_eval(degree=2, knots=knots, 
+                        control_pts=control_pts, t=t)</code></pre>
+                </div>
+            </div>
+
+            <!-- Procedural Shading -->
+            <div class="glass-panel feature-card">
+                <div class="card-content">
+                    <h3>Procedural Shaders & Node Trees</h3>
+                    <p>The entire visual composition is constructed procedurally through the Python `bpy` API. A `ShaderNodeTexVoronoi` maps the initial asteroid base, while a scripted `MixRGB` node dynamically interpolates into an LSCM-mapped cosmic texture over exactly 7 seconds, coordinated mathematically with the B-Spline drop.</p>
+                </div>
+                <div class="card-visual code-visual">
+<pre><code class="language-python"># LSCM Sparse System Core
+def solve_lscm(vertices, faces):
+    # 1. Compute local orthographic frames
+    local, areas = _compute_local_frames(vertices, faces)
+    
+    # 2. Build Cauchy-Riemann conformal energy matrix
+    A_full = sparse.coo_matrix(
+        (vals, (rows, cols)), shape=(n_rows, n_cols)
+    ).tocsc()
+    
+    # 3. Solve Normal Equations (A^T A x = A^T b)
+    x_free = spsolve(A_free.T @ A_free, A_free.T @ rhs)
+    return reconstruct_uv(x_free)
+</code></pre>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <footer>
+        <p>Built completely in Python for Procedural CG Rendering</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

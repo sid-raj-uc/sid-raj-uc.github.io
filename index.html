@@ -920,12 +920,9 @@
 
         <!-- RLHF -->
         <a class="project-card" href="https://github.com/sid-raj-uc/RLHF" target="_blank">
-          <div class="card-preview card-preview--code">
-            <div class="code-line"><span class="kw">python</span> sft_trainer.py <span class="str">--model</span> llama-2-7b</div>
-            <div class="code-line"><span class="cm"># stage 2: reward model (Bradley-Terry)</span></div>
-            <div class="code-line"><span class="kw">python</span> reward_model.py <span class="str">--agreement</span> <span class="nm">0.82</span></div>
-            <div class="code-line"><span class="cm"># stage 3: PPO + KL divergence penalty</span></div>
-            <div class="code-line"><span class="kw">python</span> ppo_trainer.py <span class="str">--kl-coef</span> <span class="nm">0.1</span></div>
+          <div class="card-preview" onclick="event.preventDefault();event.stopPropagation();window.open('./rlhf-fine-tuning/index.html','_blank')">
+            <img src="./rlhf-fine-tuning/screenshot.png" alt="RLHF Fine-Tuning" loading="lazy">
+            <div class="preview-overlay"><span class="preview-overlay-text">▶ View Project</span></div>
           </div>
           <div>
             <div class="project-kind">LLM Alignment · Reinforcement Learning</div>
@@ -1003,12 +1000,8 @@
 
         <!-- CIFAR MLOps -->
         <a class="project-card" href="https://github.com/sid-raj-uc/cifar-cnn-analysis" target="_blank">
-          <div class="card-preview card-preview--code" onclick="event.preventDefault();event.stopPropagation();window.open('./cnn-visualizer/index.html','_blank')" style="cursor:pointer">
-            <div class="code-line"><span class="kw">python</span> train.py <span class="str">--epochs</span> <span class="nm">50</span> <span class="str">--acc</span> <span class="nm">93%</span></div>
-            <div class="code-line"><span class="cm"># export to ONNX for prod inference</span></div>
-            <div class="code-line"><span class="kw">torch.onnx.export</span>(model, x, <span class="str">"cifar.onnx"</span>)</div>
-            <div class="code-line"><span class="cm"># FastAPI → Docker → AWS ECS/ECR</span></div>
-            <div class="code-line"><span class="nm">uvicorn</span> app:app <span class="str">--host</span> 0.0.0.0 <span class="str">--port</span> <span class="nm">8000</span></div>
+          <div class="card-preview" onclick="event.preventDefault();event.stopPropagation();window.open('./cnn-visualizer/index.html','_blank')" style="cursor:pointer">
+            <img src="./cnn-visualizer/screenshot.png" alt="CNN Visualizer" loading="lazy">
             <div class="preview-overlay"><span class="preview-overlay-text">▶ Live Demo</span></div>
           </div>
           <div>
@@ -1046,8 +1039,8 @@
 
         <!-- NLP Feedback -->
         <a class="project-card" href="https://github.com/sid-raj-uc/feedback-analyzer" target="_blank">
-          <div class="card-preview" onclick="event.preventDefault();event.stopPropagation();window.open('./Feedback-analyzer/index.html','_blank')">
-            <img src="https://raw.githubusercontent.com/sid-raj-uc/feedback-analyzer/main/UI-Images/image.png" alt="Feedback analyzer dashboard" loading="lazy">
+          <div class="card-preview" onclick="event.preventDefault();event.stopPropagation();window.open('./feedback-analyze/index.html','_blank')">
+            <img src="./feedback-analyze/screenshot.png" alt="Feedback analyzer dashboard" loading="lazy">
             <div class="preview-overlay"><span class="preview-overlay-text">▶ Live Demo</span></div>
           </div>
           <div>
@@ -1086,8 +1079,8 @@
 
         <!-- Parallel Ray Tracer -->
         <a class="project-card" href="https://github.com/sid-raj-uc/parallel-raytracer" target="_blank">
-          <div class="card-preview" onclick="event.preventDefault();event.stopPropagation();window.open('./GoRay-Showcase-Export/index.html','_blank')">
-            <img src="https://raw.githubusercontent.com/sid-raj-uc/parallel-raytracer/main/proj3/output/output_seq_4.png" alt="Ray traced render" loading="lazy">
+          <div class="card-preview" onclick="event.preventDefault();event.stopPropagation();window.open('./golang-ray-tracing/index.html','_blank')">
+            <img src="./golang-ray-tracing/screenshot.png" alt="Ray traced render" loading="lazy">
             <div class="preview-overlay"><span class="preview-overlay-text">▶ Live Demo</span></div>
           </div>
           <div>
@@ -1124,9 +1117,9 @@
 
         <!-- CG Animation -->
         <a class="project-card" href="https://github.com/sid-raj-uc/cg-animation" target="_blank">
-          <div class="card-preview" onclick="openLightbox(event,['https://raw.githubusercontent.com/sid-raj-uc/cg-animation/main/lscm_diagram.png'],'LSCM UV parameterization — angle-preserving mesh mapping via Cauchy-Riemann equations')">
-            <img src="https://raw.githubusercontent.com/sid-raj-uc/cg-animation/main/lscm_diagram.png" alt="LSCM UV parameterization diagram" loading="lazy">
-            <div class="preview-overlay"><span class="preview-overlay-text">▶ View Diagram</span></div>
+          <div class="card-preview" onclick="event.preventDefault();event.stopPropagation();window.open('./mesh-parameterization/index.html','_blank')">
+            <img src="./mesh-parameterization/screenshot.png" alt="Mesh UV Parameterization" loading="lazy">
+            <div class="preview-overlay"><span class="preview-overlay-text">▶ Live Demo</span></div>
           </div>
           <div>
             <div class="project-kind">Computational Math · Computer Graphics</div>

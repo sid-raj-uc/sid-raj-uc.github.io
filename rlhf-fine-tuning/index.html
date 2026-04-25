@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLHF Alignment Pipeline</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-effects">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+    </div>
+    
+    <nav class="navbar" style="display:flex; justify-content:space-between; align-items:center; padding:1rem 2rem;">
+        <div style="display:flex;align-items:center;gap:1.5rem">
+            <div class="logo">RLHF<span>Pipeline</span></div>
+            <a href="../" class="btn secondary" style="font-size:0.85rem;padding:0.4rem 1rem">← Portfolio</a>
+        </div>
+        <div style="display:flex;align-items:center;gap:2rem">
+            <ul class="nav-links" style="margin:0;">
+                <li><a href="#interactive">Simulator</a></li>
+                <li><a href="#metrics">Metrics</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+            </ul>
+            <a href="https://github.com/sid-raj-uc/RLHF" class="btn secondary" target="_blank" style="font-size:0.85rem;padding:0.4rem 1rem">View GitHub</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="glitch" data-text="Llama-2-7B Alignment">Llama-2-7B Alignment</h1>
+            <p>A production-grade Reinforcement Learning from Human Feedback pipeline using PPO, TRL, and LoRA.</p>
+            <div class="hero-buttons">
+                <a href="#interactive" class="btn primary">Try Simulator</a>
+                <a href="#metrics" class="btn secondary">View Results</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <canvas id="heroCanvas"></canvas>
+        </div>
+    </header>
+
+    <!-- Swapped Section Order: Simulator is now before Metrics -->
+    <section id="interactive" class="interactive-section">
+        <h2 class="section-title">Reward Model <span>Simulator</span></h2>
+        <p class="section-subtitle">Simulate the pairwise ranking loss by choosing the better response.</p>
+        
+        <div class="prompt-box glass">
+            <strong>Prompt:</strong> <span id="sim-prompt">Loading...</span>
+        </div>
+        
+        <div class="options-container">
+            <div class="option-card glass" id="card-A" onclick="selectOption('A')">
+                <div class="option-header">Response A</div>
+                <div class="option-body" id="sim-body-A">Loading...</div>
+                <div class="reward-score" id="score-A"></div>
+            </div>
+            <div class="vs-badge">VS</div>
+            <div class="option-card glass" id="card-B" onclick="selectOption('B')">
+                <div class="option-header">Response B</div>
+                <div class="option-body" id="sim-body-B">Loading...</div>
+                <div class="reward-score" id="score-B"></div>
+            </div>
+        </div>
+        <div class="feedback-msg" id="feedback-msg"></div>
+        <div style="text-align: center; margin-top: 2rem;">
+            <button id="next-btn" class="btn primary" style="display:none; cursor: pointer;" onclick="nextExample()">Try Another Example</button>
+        </div>
+    </section>
+
+    <section id="metrics" class="metrics-section">
+        <h2 class="section-title">Performance <span>Gains</span></h2>
+        <div class="metrics-grid">
+            <div class="metric-card glass">
+                <div class="metric-icon">✨</div>
+                <h3>Helpfulness</h3>
+                <div class="metric-value">3.2 <span class="arrow">→</span> 4.3</div>
+                <div class="metric-boost">+35%</div>
+                <div class="progress-bar"><div class="fill" style="width: 86%;"></div></div>
+            </div>
+            <div class="metric-card glass">
+                <div class="metric-icon">🛡️</div>
+                <h3>Safety</h3>
+                <div class="metric-value">3.5 <span class="arrow">→</span> 4.7</div>
+                <div class="metric-boost">+35%</div>
+                <div class="progress-bar"><div class="fill" style="width: 94%;"></div></div>
+            </div>
+            <div class="metric-card glass">
+                <div class="metric-icon">💾</div>
+                <h3>GPU Memory</h3>
+                <div class="metric-value">28GB <span class="arrow">→</span> 8.4GB</div>
+                <div class="metric-boost negative">-70%</div>
+                <div class="progress-bar inverted"><div class="fill" style="width: 30%;"></div></div>
+            </div>
+            <div class="metric-card glass">
+                <div class="metric-icon">🔀</div>
+                <h3>Output Diversity</h3>
+                <div class="metric-value">0.45 <span class="arrow">→</span> 0.36</div>
+                <div class="metric-boost negative">-20%</div>
+                <div class="progress-bar inverted"><div class="fill" style="width: 80%;"></div></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="architecture" class="architecture-section">
+        <h2 class="section-title">Pipeline <span>Architecture</span></h2>
+        <div class="arch-container">
+            <div class="arch-stage glass" id="stage-sft">
+                <div class="stage-number">01</div>
+                <h3>Supervised Fine-Tuning</h3>
+                <p>Fine-tuning base Llama-2 on high-quality instruction data using PEFT LoRA adapters.</p>
+                <div class="stage-stats">
+                    <span>Rank: 16</span>
+                    <span>Params: ~33M</span>
+                </div>
+            </div>
+            <div class="arch-connector"></div>
+            <div class="arch-stage glass" id="stage-rm">
+                <div class="stage-number">02</div>
+                <h3>Reward Modeling</h3>
+                <p>Training on human preference data using Bradley-Terry pairwise ranking loss.</p>
+                <div class="stage-stats">
+                    <span>Agreement: 82%</span>
+                </div>
+            </div>
+            <div class="arch-connector"></div>
+            <div class="arch-stage glass" id="stage-ppo">
+                <div class="stage-number">03</div>
+                <h3>PPO Alignment</h3>
+                <p>Optimizing policy against the reward model with KL-divergence tracking via W&B.</p>
+                <div class="stage-stats">
+                    <span>KL Coeff: 0.05</span>
+                    <span>Epochs: 4</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Built for the RLHF Fine-tuning Pipeline Showcase.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

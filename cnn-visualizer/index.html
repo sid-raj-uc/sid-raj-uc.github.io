@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CNN Vision Visualizer | Siddharth Raj</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./static/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
+  <style>
+    /* ─── NAV ─── */
+    .top-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      height: 52px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(5,9,26,0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .nav-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.85rem; font-weight: 600;
+      color: var(--text-muted); text-decoration: none;
+      padding: 6px 14px;
+      border: 1px solid var(--glass-border); border-radius: 8px;
+      background: rgba(255,255,255,0.03);
+      transition: all 0.2s;
+    }
+    .nav-back:hover { color: var(--text-main); border-color: var(--primary); background: rgba(0,196,204,0.08); }
+    .nav-brand { font-weight: 700; font-size: 1rem; color: var(--text-main); }
+
+    /* ─── MODEL STATUS BADGE ─── */
+    .model-status {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.75rem; font-weight: 500;
+      padding: 4px 12px; border-radius: 999px; border: 1px solid;
+    }
+    .model-status.loading { color: #f59e0b; border-color: rgba(245,158,11,.3); background: rgba(245,158,11,.08); }
+    .model-status.ready   { color: var(--success); border-color: rgba(16,185,129,.3); background: rgba(16,185,129,.08); }
+    .model-status.error   { color: #f87171;  border-color: rgba(248,113,113,.3);  background: rgba(248,113,113,.08); }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .status-dot.pulse { animation: statusPulse 1.4s ease-in-out infinite; }
+    @keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+    body { padding-top: 52px; }
+
+    /* ─── CANVAS fills img-container like <img> did ─── */
+    .img-container canvas {
+      width: 100%; height: 100%;
+      display: block; object-fit: contain;
+      transition: transform 0.3s ease;
+    }
+    .img-container:hover canvas { transform: scale(1.05); }
+  </style>
+</head>
+<body>
+  <div class="background-elements">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- ─── NAV ─── -->
+  <nav class="top-nav">
+    <a href="../" class="nav-back">← Portfolio</a>
+    <div class="nav-brand">CNN Vision Visualizer</div>
+    <div class="model-status loading" id="model-status">
+      <span class="status-dot pulse"></span>
+      <span id="status-text">Loading model…</span>
+    </div>
+  </nav>
+
+  <div class="container">
+    <header>
+      <div class="header-content">
+        <h1>CNN Vision <span class="highlight">Visualizer</span></h1>
+        <p>Runs entirely in your browser — no server. Upload any image or pick a sample to see the CIFAR-10 CNN's prediction and its Class Activation Map.</p>
+      </div>
+      <div class="header-badges">
+        <span class="badge">ONNX Runtime Web</span>
+        <span class="badge">CIFAR-10</span>
+        <span class="badge">CAM</span>
+      </div>
+    </header>
+
+    <main>
+      <div class="glass-panel upload-section">
+        <h2>1. Provide an Image</h2>
+        <div class="upload-area" id="drop-zone">
+          <input type="file" id="file-input" accept="image/*" hidden>
+          <div class="upload-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <p>Drag &amp; drop an image or <span class="browse-link">browse</span></p>
+          <p class="sub-text">JPG / PNG · Works best with animals and vehicles</p>
+        </div>
+
+        <div class="sample-images">
+          <p>Or try a sample — one from each CIFAR-10 class:</p>
+          <div class="samples-grid" id="samples-container"></div>
+        </div>
+      </div>
+
+      <div class="results-container hidden" id="results-section">
+        <div class="glass-panel prediction-panel">
+          <h2>2. Prediction</h2>
+          <div class="main-prediction">
+            <div class="pred-class" id="pred-class-name">--</div>
+            <div class="pred-conf"  id="pred-confidence">--%</div>
+          </div>
+          <div class="prob-bars" id="prob-bars-container"></div>
+        </div>
+
+        <div class="glass-panel visualization-panel">
+          <h2>3. Inside the Network's Mind</h2>
+          <p class="vis-desc">The heatmap shows which spatial regions activated most in the final conv layer. Red = high activation, blue = low. The overlay blends both so you can see exactly what influenced the decision.</p>
+          <div class="vis-grid">
+            <div class="vis-card">
+              <h3>Original Image</h3>
+              <div class="img-container">
+                <canvas id="canvas-original"></canvas>
+              </div>
+            </div>
+            <div class="vis-card">
+              <h3>Activation Map</h3>
+              <div class="img-container">
+                <canvas id="canvas-heatmap"></canvas>
+              </div>
+            </div>
+            <div class="vis-card highlight-card">
+              <h3>Overlay (What it "sees")</h3>
+              <div class="img-container overlay-container">
+                <canvas id="canvas-overlay"></canvas>
+                <div class="scan-line"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading-overlay hidden" id="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loading-text">Analyzing pixels…</p>
+      </div>
+    </main>
+
+    <footer>
+      <p>Client-side inference via ONNX Runtime Web · Built by Siddharth Raj</p>
+    </footer>
+  </div>
+
+  <script src="./model_b64.js"></script>
+  <script>
+  // ─── CONFIG ────────────────────────────────────────────────────────────────
+  const MODEL_URL   = './model.onnx';
+  const SAMPLE_BASE = './static/sample_images/';
+  const CLASSES     = ['plane','car','bird','cat','deer','dog','frog','horse','ship','truck'];
+  const VIS_SIZE    = 256;
+
+  // All 50 sample images
+  const SAMPLES = [
+    'sample_plane_0.png', 'sample_plane_1.png', 'sample_plane_2.png', 'sample_plane_3.png', 'sample_plane_4.png',
+    'sample_car_0.png', 'sample_car_1.png', 'sample_car_2.png', 'sample_car_3.png', 'sample_car_4.png',
+    'sample_bird_0.png', 'sample_bird_1.png', 'sample_bird_2.png', 'sample_bird_3.png', 'sample_bird_4.png',
+    'sample_cat_0.png', 'sample_cat_1.png', 'sample_cat_2.png', 'sample_cat_3.png', 'sample_cat_4.png',
+    'sample_deer_0.png', 'sample_deer_1.png', 'sample_deer_2.png', 'sample_deer_3.png', 'sample_deer_4.png',
+    'sample_dog_0.png', 'sample_dog_1.png', 'sample_dog_2.png', 'sample_dog_3.png', 'sample_dog_4.png',
+    'sample_frog_0.png', 'sample_frog_1.png', 'sample_frog_2.png', 'sample_frog_3.png', 'sample_frog_4.png',
+    'sample_horse_0.png', 'sample_horse_1.png', 'sample_horse_2.png', 'sample_horse_3.png', 'sample_horse_4.png',
+    'sample_ship_0.png', 'sample_ship_1.png', 'sample_ship_2.png', 'sample_ship_3.png', 'sample_ship_4.png',
+    'sample_truck_0.png', 'sample_truck_1.png', 'sample_truck_2.png', 'sample_truck_3.png', 'sample_truck_4.png'
+  ];
+
+  // ─── MODEL LOADING ─────────────────────────────────────────────────────────
+  let session = null;
+
+  function base64ToArrayBuffer(base64) {
+    const binary_string = window.atob(base64);
+    const len = binary_string.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+
+  // fetch() is blocked on file:// protocol. XHR with responseType=arraybuffer
+  // works on Firefox/Safari for local files; Chrome requires a server.
+  function fetchBuffer(url) {
+    return fetch(url)
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+      .catch(() => new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'arraybuffer';
+        xhr.onload = () => (xhr.status === 200 || xhr.status === 0) ? resolve(xhr.response) : reject(new Error('XHR ' + xhr.status));
+        xhr.onerror = () => reject(new Error('XHR network error'));
+        xhr.send();
+      }));
+  }
+
+  function showFileProtocolBanner() {
+    const banner = document.createElement('div');
+    banner.style.cssText = [
+      'position:fixed;top:52px;left:0;right:0;z-index:999',
+      'background:rgba(14,26,51,0.97);border-bottom:1px solid #1a2f50',
+      'padding:14px 2rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap',
+    ].join(';');
+    banner.innerHTML = `
+      <span style="font-size:1.1rem">⚠️</span>
+      <span style="color:#e2e8f0;font-size:0.9rem">
+        Chrome blocks local file loading. Serve with a local server for full functionality:
+        <code style="background:rgba(0,196,204,0.12);color:#00c4cc;padding:2px 8px;border-radius:4px;margin:0 4px">
+          python3 -m http.server 8080
+        </code>
+        then open
+        <code style="background:rgba(0,196,204,0.12);color:#00c4cc;padding:2px 8px;border-radius:4px;margin:0 4px">
+          http://localhost:8080/cnn-visualizer/
+        </code>
+      </span>`;
+    document.body.prepend(banner);
+  }
+
+  async function loadModel() {
+    setStatus('loading', 'Loading model…');
+    ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/';
+    ort.env.wasm.numThreads = 1;
+    ort.env.wasm.simd = false;
+
+    let modelBuffer;
+    try {
+      modelBuffer = await fetchBuffer(MODEL_URL);
+    } catch (e) {
+      if (typeof MODEL_B64 !== 'undefined') {
+        console.log("Fetch failed, falling back to embedded base64 model.");
+        modelBuffer = base64ToArrayBuffer(MODEL_B64);
+      } else {
+        if (location.protocol === 'file:') showFileProtocolBanner();
+        setStatus('error', 'Cannot load model');
+        console.error('Model load failed:', e);
+        return;
+      }
+    }
+
+    // Pass ArrayBuffer directly — works on file:// after XHR loads the bytes.
+    for (const backend of ['webgl', 'wasm', 'cpu']) {
+      try {
+        session = await ort.InferenceSession.create(modelBuffer, {
+          executionProviders: [backend],
+        });
+        setStatus('ready', 'Ready');
+        console.log('ONNX backend:', backend);
+        return;
+      } catch (e) {
+        console.warn(`Backend "${backend}" failed:`, e.message);
+      }
+    }
+    setStatus('error', 'All backends failed — check console');
+  }
+
+  function setStatus(state, text) {
+    const el  = document.getElementById('model-status');
+    const dot = el.querySelector('.status-dot');
+    el.className = `model-status ${state}`;
+    dot.className = `status-dot${state === 'loading' ? ' pulse' : ''}`;
+    document.getElementById('status-text').textContent = text;
+  }
+
+  // ─── IMAGE → TENSOR ────────────────────────────────────────────────────────
+  function imgToTensor(img) {
+    const c = document.createElement('canvas');
+    c.width = 32; c.height = 32;
+    c.getContext('2d').drawImage(img, 0, 0, 32, 32);
+    const { data } = c.getContext('2d').getImageData(0, 0, 32, 32); // RGBA HWC
+
+    const f32 = new Float32Array(3 * 32 * 32);
+    for (let ch = 0; ch < 3; ch++) {
+      for (let i = 0; i < 32 * 32; i++) {
+        f32[ch * 32 * 32 + i] = (data[i * 4 + ch] / 255.0 - 0.5) / 0.5;
+      }
+    }
+    return new ort.Tensor('float32', f32, [1, 3, 32, 32]);
+  }
+
+  // ─── SOFTMAX ───────────────────────────────────────────────────────────────
+  function softmax(arr) {
+    const mx   = Math.max(...arr);
+    const exps = arr.map(x => Math.exp(x - mx));
+    const sum  = exps.reduce((a, b) => a + b, 0);
+    return exps.map(x => x / sum);
+  }
+
+
+
+  // ─── BILINEAR UPSAMPLE ─────────────────────────────────────────────────────
+  function upsample(cam, sH, sW, dH, dW) {
+    const out = new Float32Array(dH * dW);
+    for (let y = 0; y < dH; y++) {
+      for (let x = 0; x < dW; x++) {
+        const gy = (y + 0.5) / dH * sH - 0.5;
+        const gx = (x + 0.5) / dW * sW - 0.5;
+        const y0 = Math.max(0, Math.floor(gy)), y1 = Math.min(sH - 1, y0 + 1);
+        const x0 = Math.max(0, Math.floor(gx)), x1 = Math.min(sW - 1, x0 + 1);
+        const dy = gy - y0, dx = gx - x0;
+        out[y * dW + x] =
+          cam[y0 * sW + x0] * (1 - dy) * (1 - dx) +
+          cam[y0 * sW + x1] * (1 - dy) * dx +
+          cam[y1 * sW + x0] * dy       * (1 - dx) +
+          cam[y1 * sW + x1] * dy       * dx;
+      }
+    }
+    return out;
+  }
+
+  // ─── JET COLORMAP ──────────────────────────────────────────────────────────
+  function jet(t) {
+    const cl = v => Math.round(Math.max(0, Math.min(1, v)) * 255);
+    return [
+      cl(1.5 - Math.abs(4 * t - 3)),
+      cl(1.5 - Math.abs(4 * t - 2)),
+      cl(1.5 - Math.abs(4 * t - 1)),
+    ];
+  }
+
+  // ─── DRAW HELPERS ──────────────────────────────────────────────────────────
+  function drawOriginal(img) {
+    const cv = document.getElementById('canvas-original');
+    cv.width = VIS_SIZE; cv.height = VIS_SIZE;
+    cv.getContext('2d').drawImage(img, 0, 0, VIS_SIZE, VIS_SIZE);
+  }
+
+  function drawHeatmapAndOverlay(cam, origImg) {
+    const up = upsample(cam, 8, 8, VIS_SIZE, VIS_SIZE);
+
+    // Build heatmap ImageData
+    const heatData = new ImageData(VIS_SIZE, VIS_SIZE);
+    for (let i = 0; i < VIS_SIZE * VIS_SIZE; i++) {
+      const [r, g, b] = jet(up[i]);
+      heatData.data[i * 4]     = r;
+      heatData.data[i * 4 + 1] = g;
+      heatData.data[i * 4 + 2] = b;
+      heatData.data[i * 4 + 3] = 255;
+    }
+    const hc = document.getElementById('canvas-heatmap');
+    hc.width = VIS_SIZE; hc.height = VIS_SIZE;
+    hc.getContext('2d').putImageData(heatData, 0, 0);
+
+    // Overlay: draw original, read pixels, blend with heatmap
+    const oc   = document.getElementById('canvas-overlay');
+    oc.width   = VIS_SIZE; oc.height = VIS_SIZE;
+    const octx = oc.getContext('2d');
+    octx.drawImage(origImg, 0, 0, VIS_SIZE, VIS_SIZE);
+    const orig = octx.getImageData(0, 0, VIS_SIZE, VIS_SIZE);
+
+    const blend = new ImageData(VIS_SIZE, VIS_SIZE);
+    for (let i = 0; i < VIS_SIZE * VIS_SIZE; i++) {
+      const [r, g, b] = jet(up[i]);
+      blend.data[i * 4]     = orig.data[i * 4]     * 0.55 + r * 0.45;
+      blend.data[i * 4 + 1] = orig.data[i * 4 + 1] * 0.55 + g * 0.45;
+      blend.data[i * 4 + 2] = orig.data[i * 4 + 2] * 0.55 + b * 0.45;
+      blend.data[i * 4 + 3] = 255;
+    }
+    octx.putImageData(blend, 0, 0);
+  }
+
+  // ─── PROBABILITY BARS ──────────────────────────────────────────────────────
+  function renderProbBars(probs) {
+    const ranked = CLASSES
+      .map((cls, i) => [cls, probs[i]])
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3);
+
+    document.getElementById('prob-bars-container').innerHTML = ranked.map(([cls, p]) => `
+      <div class="prob-item">
+        <div class="prob-label">
+          <span>${cls}</span><span>${(p * 100).toFixed(1)}%</span>
+        </div>
+        <div class="prob-bar-bg">
+          <div class="prob-bar-fill" data-val="${p}" style="width:0%"></div>
+        </div>
+      </div>
+    `).join('');
+
+    setTimeout(() => {
+      document.querySelectorAll('.prob-bar-fill').forEach(el => {
+        el.style.width = (parseFloat(el.dataset.val) * 100) + '%';
+      });
+    }, 50);
+  }
+
+  // ─── INFERENCE ─────────────────────────────────────────────────────────────
+  async function runInference(img) {
+    if (!session) {
+      const statusEl = document.getElementById('model-status');
+      if (statusEl.classList.contains('error')) {
+        alert('Model failed to load. Check the browser console for details.');
+      } else {
+        alert('Model is still loading — please wait a moment.');
+      }
+      return;
+    }
+
+    document.getElementById('loading-overlay').classList.remove('hidden');
+    document.getElementById('results-section').classList.add('hidden');
+
+    try {
+      const { logits, cam } = await session.run({ image: imgToTensor(img) });
+
+      const probs  = softmax(Array.from(logits.data));
+      const topIdx = probs.indexOf(Math.max(...probs));
+      const camData = cam.data;
+
+      document.getElementById('pred-class-name').textContent = CLASSES[topIdx];
+      document.getElementById('pred-confidence').textContent = (probs[topIdx] * 100).toFixed(1) + '%';
+
+      renderProbBars(probs);
+      drawOriginal(img);
+      drawHeatmapAndOverlay(camData, img);
+
+      document.getElementById('loading-overlay').classList.add('hidden');
+      document.getElementById('results-section').classList.remove('hidden');
+      setTimeout(() =>
+        document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' }),
+        100
+      );
+    } catch (e) {
+      console.error(e);
+      document.getElementById('loading-overlay').classList.add('hidden');
+      alert('Inference error: ' + e.message);
+    }
+  }
+
+  // ─── SAMPLE GRID ───────────────────────────────────────────────────────────
+  function buildSamples() {
+    const container = document.getElementById('samples-container');
+    SAMPLES.forEach(name => {
+      const label   = name.replace(/^sample_/, '').replace(/_\d+\.png$/, '');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'sample-img-wrapper';
+      wrapper.title = label;
+
+      const imgEl = document.createElement('img');
+      imgEl.src = SAMPLE_BASE + name;
+      imgEl.alt = label;
+
+      wrapper.appendChild(imgEl);
+      // imgEl is already loaded in the DOM — draw it directly, no crossOrigin needed
+      wrapper.addEventListener('click', () => runInference(imgEl));
+      container.appendChild(wrapper);
+    });
+  }
+
+  // ─── FILE UPLOAD & DROP ────────────────────────────────────────────────────
+  function initUpload() {
+    const dropZone  = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+  }
+
+  function handleFile(file) {
+    if (!file.type.startsWith('image/')) { alert('Please upload an image file.'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => runInference(img);
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ─── BOOT ──────────────────────────────────────────────────────────────────
+  buildSamples();
+  initUpload();
+  loadModel();
+  </script>
+</body>
+</html>

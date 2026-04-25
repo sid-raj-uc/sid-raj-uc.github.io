@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLP Feedback Analyzer | Portfolio Showcase</title>
+    <meta name="description" content="A production-grade NLP pipeline processing large-scale customer feedback data using VADER sentiment analysis and BERTopic clustering.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    
+    <nav class="navbar">
+        <div class="nav-content">
+            <div style="display:flex;align-items:center;gap:1.25rem">
+                <div class="logo">SR.<span>Portfolio</span></div>
+                <a href="../" class="btn btn-outline" style="font-size:0.82rem;padding:0.45rem 1rem">← Portfolio</a>
+            </div>
+            <a href="https://github.com/sid-raj-uc/feedback-analyzer" class="btn btn-outline" target="_blank"><i class="fab fa-github"></i> View Repository</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <div class="badge">NLP Data Pipeline</div>
+            <h1 class="hero-title">Customer Feedback <br><span class="gradient-text">Intelligence Analyzer</span></h1>
+            <p class="hero-subtitle">Processing 10,000+ unstructured reviews using VADER sentiment analysis and BERTopic clustering on TF-IDF embeddings to surface actionable business pain points.</p>
+            
+            <div class="tech-stack">
+                <span class="tech-pill"><i class="fab fa-python"></i> Python 3.9+</span>
+                <span class="tech-pill"><i class="fas fa-brain"></i> BERTopic</span>
+                <span class="tech-pill"><i class="fas fa-chart-line"></i> VADER Sentiment</span>
+                <span class="tech-pill"><i class="fas fa-server"></i> Flask API</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <section class="metrics-section">
+            <h2 class="section-title">Performance Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <i class="fas fa-database metric-icon"></i>
+                    <div class="metric-value">10,000+</div>
+                    <div class="metric-label">Reviews Processed</div>
+                </div>
+                <div class="metric-card">
+                    <i class="fas fa-bolt metric-icon"></i>
+                    <div class="metric-value">9,100<span class="small">/s</span></div>
+                    <div class="metric-label">Pipeline Throughput</div>
+                </div>
+                <div class="metric-card">
+                    <i class="fas fa-stopwatch metric-icon"></i>
+                    <div class="metric-value">34.8<span class="small">s</span></div>
+                    <div class="metric-label">Total Runtime</div>
+                </div>
+                <div class="metric-card">
+                    <i class="fas fa-check-circle metric-icon"></i>
+                    <div class="metric-value">69.3<span class="small">%</span></div>
+                    <div class="metric-label">VADER/Star Agreement</div>
+                </div>
+                <div class="metric-card">
+                    <i class="fas fa-project-diagram metric-icon"></i>
+                    <div class="metric-value">44</div>
+                    <div class="metric-label">Discovered Clusters</div>
+                </div>
+                <div class="metric-card">
+                    <i class="fas fa-lightbulb metric-icon"></i>
+                    <div class="metric-value">10</div>
+                    <div class="metric-label">Actionable Insights</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="showcase-section">
+            <h2 class="section-title">Interactive Dashboard</h2>
+            <p class="section-desc">A scalable Flask-based visualization system highlighting sentiment trends, topic heatmaps, and category breakdowns.</p>
+            
+            <div class="dashboard-grid">
+                <!-- KPI Row -->
+                <div class="dash-kpi">
+                    <div class="kpi-item positive">
+                        <span class="kpi-title">Positive Sentiment</span>
+                        <span class="kpi-val">60.9%</span>
+                    </div>
+                    <div class="kpi-item negative">
+                        <span class="kpi-title">Negative Sentiment</span>
+                        <span class="kpi-val">31.8%</span>
+                    </div>
+                    <div class="kpi-item neutral">
+                        <span class="kpi-title">Neutral Sentiment</span>
+                        <span class="kpi-val">7.3%</span>
+                    </div>
+                </div>
+
+                <div class="dash-charts">
+                    <div class="chart-card">
+                        <h3>Sentiment Distribution</h3>
+                        <div class="chart-container" style="position: relative; height:300px; width:100%">
+                            <canvas id="sentimentChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h3>Sentiment by Category</h3>
+                        <div class="chart-container" style="position: relative; height:300px; width:100%">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dash-charts full-width">
+                    <div class="chart-card">
+                        <h3>Top Discovered Clusters (BERTopic)</h3>
+                        <div class="chart-container" style="position: relative; height:400px; width:100%">
+                            <canvas id="topicChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="architecture-section">
+            <h2 class="section-title">Pipeline Architecture</h2>
+            <div class="architecture-container">
+                <div class="arch-layer">
+                    <div class="layer-title">1. Data Ingestion Layer</div>
+                    <div class="layer-content">
+                        <div class="arch-box">Raw CSV</div>
+                        <i class="fas fa-arrow-right arch-arrow"></i>
+                        <div class="arch-box">Cleaner</div>
+                        <i class="fas fa-arrow-right arch-arrow"></i>
+                        <div class="arch-box">Preprocessed DataFrame</div>
+                    </div>
+                </div>
+                
+                <div class="arch-layer">
+                    <div class="layer-title">2. NLP Processing Pipeline</div>
+                    <div class="layer-content pipeline-split">
+                        <div class="arch-branch">
+                            <div class="arch-box highlight-box">
+                                <h4>VADER Sentiment</h4>
+                                <ul>
+                                    <li>Compound</li>
+                                    <li>Positive</li>
+                                    <li>Negative</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="arch-branch">
+                            <div class="arch-box highlight-box">
+                                <h4>BERTopic</h4>
+                                <div class="mini-flow">
+                                    <span>UMAP</span> <i class="fas fa-arrow-right"></i> <span>HDBSCAN</span> <i class="fas fa-arrow-right"></i> <span>c-TF-IDF</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arch-layer">
+                    <div class="layer-title">3. Analysis & Visualization</div>
+                    <div class="layer-content">
+                        <div class="arch-box result-box">Sentiment Dashboard</div>
+                        <div class="arch-box result-box">Topic Heatmaps</div>
+                        <div class="arch-box result-box">Pain Point Extraction</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>Built with <i class="fas fa-heart" style="color: #ff4757;"></i> for Portfolio Showcase</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

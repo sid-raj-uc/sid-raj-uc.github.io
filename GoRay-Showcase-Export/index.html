@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoRay | Concurrent Ray Tracer</title>
+    <meta name="description" content="A high-performance concurrent ray tracer written in Go, featuring a lock-free work-stealing scheduler.">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <nav class="glass-nav">
+        <div style="display:flex;align-items:center;gap:1.5rem">
+            <div class="logo">GoRay.</div>
+            <a href="../" class="btn-secondary" style="font-size:0.85rem;padding:0.5rem 1rem">← Portfolio</a>
+        </div>
+        <div class="nav-links">
+            <a href="#features">Architecture</a>
+            <a href="#visualization">How It Works</a>
+            <a href="#gallery">Performance Benchmarks</a>
+            <a href="https://github.com/sid-raj-uc/parallel-raytracer" target="_blank" class="btn-primary">View GitHub</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <div class="badge">Systems Engineering & Concurrency</div>
+            <h1 class="glitch" data-text="High-Performance">High-Performance<br><span>Ray Tracing Engine</span></h1>
+            <p>Built from scratch in Go. Engineered with a custom lock-free Chase-Lev work-stealing scheduler to dynamically balance CPU load across asymmetric rendering tasks.</p>
+            <div class="hero-actions">
+                <a href="#features" class="btn-primary">Explore Architecture</a>
+                <a href="#gallery" class="btn-secondary">View Output</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="glass-card main-render-card">
+                <img src="assets/main_render.png" alt="Complex Field Render" id="hero-image">
+                <div class="render-overlay">
+                    <span class="render-stat">Scene: Complex Field</span>
+                    <span class="render-stat">Threads: 8</span>
+                    <span class="render-stat">Scheduler: Work-Stealing</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="features-section">
+        <h2 class="section-title">Engine Architecture</h2>
+        <div class="features-grid">
+            <div class="glass-card feature-card">
+                <div class="feature-icon">⚛️</div>
+                <h3>Lock-Free Atomics</h3>
+                <p>Eliminates mutex contention using <code>sync/atomic</code> Compare-And-Swap primitives, allowing threads to operate continuously without blocking.</p>
+            </div>
+            <div class="glass-card feature-card">
+                <div class="feature-icon">⚖️</div>
+                <h3>Work-Stealing Scheduler</h3>
+                <p>Implements a Chase-Lev Deque. Idle threads dynamically steal 32x32 pixel chunks from busy threads, solving the starvation problem in standard BSP models.</p>
+            </div>
+            <div class="glass-card feature-card">
+                <div class="feature-icon">✨</div>
+                <h3>Physical Lighting</h3>
+                <p>Calculates multi-bounce reflections, diffuse and specular lighting interactions, and uses jittered multi-sampling for smooth anti-aliasing.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="visualization" class="viz-section">
+        <h2 class="section-title">Visualizing the Ray Tracer</h2>
+        <p class="viz-description">Watch how rays are mathematically simulated to calculate lighting, shadows, and reflections. The engine calculates these intersections millions of times per second.</p>
+        <div class="canvas-container glass-card">
+            <canvas id="ray-canvas"></canvas>
+            <div class="viz-overlay">
+                <button id="restart-viz" class="btn-secondary">Run Simulation</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="gallery" class="gallery-section">
+        <h2 class="section-title">Performance Benchmarks</h2>
+        <div class="gallery-container">
+            <div class="gallery-controls">
+                <button class="gallery-btn active" data-scene="1">Baseline</button>
+                <button class="gallery-btn" data-scene="2">Hotspot Test</button>
+                <button class="gallery-btn" data-scene="3">Mirrors</button>
+                <button class="gallery-btn" data-scene="4">Grid</button>
+                <button class="gallery-btn" data-scene="5">Complex Field</button>
+            </div>
+            <div class="glass-card gallery-display">
+                <img src="assets/benchmark_scene_1.png" alt="Scene Render" id="gallery-image">
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="glass-card footer-content">
+            <p>Designed for systems engineering portfolio demonstration.</p>
+            <p class="tech-stack">Built with <span>Go</span>, <span>HTML5</span>, and <span>Vanilla CSS</span>.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

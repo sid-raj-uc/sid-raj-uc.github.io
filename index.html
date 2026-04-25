@@ -434,6 +434,8 @@
       border-top: 1px solid var(--border);
     }
 
+    .project-date { font-size: 11px; color: var(--text-faint); }
+
     .gh-link {
       font-size: 12px;
       font-weight: 600;
@@ -441,9 +443,11 @@
       display: flex;
       align-items: center;
       gap: 5px;
+      white-space: nowrap;
     }
 
-    .project-date { font-size: 11px; color: var(--text-faint); }
+    .gh-link svg { flex-shrink: 0; }
+
 
     /* ─── EXPERIENCE ─── */
     .exp-list { display: flex; flex-direction: column; gap: 1.75rem; }
@@ -634,7 +638,7 @@
     .stagger.visible > *:nth-child(5) { opacity:1; transform:none; transition-delay: 0.38s; }
     .stagger.visible > *:nth-child(6) { opacity:1; transform:none; transition-delay: 0.44s; }
 
-    /* ─── ICONS (inline SVG helpers) ─── */
+/* ─── ICONS (inline SVG helpers) ─── */
     .icon { display: inline-block; vertical-align: middle; }
 
     /* ─── RESPONSIVE ─── */
@@ -651,6 +655,126 @@
       #hero h1 { font-size: 44px; }
       .project-grid { grid-template-columns: 1fr; }
     }
+
+    /* ─── CARD PREVIEW ─── */
+    .card-preview {
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      height: 158px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .card-preview img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.35s ease;
+    }
+    .project-card:hover .card-preview img { transform: scale(1.04); }
+    .preview-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.42);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+      cursor: pointer;
+    }
+    .project-card:hover .preview-overlay { opacity: 1; }
+    .preview-overlay-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 600;
+      color: #fff;
+      background: rgba(0,196,204,0.82);
+      padding: 6px 16px; border-radius: 20px;
+      letter-spacing: 0.06em;
+    }
+    .card-preview--code {
+      padding: 1rem 1.2rem;
+      cursor: default;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 7px;
+      background: #060b1c;
+    }
+    .code-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px; color: var(--text-muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .code-line .kw  { color: var(--accent); }
+    .code-line .str { color: #86efac; }
+    .code-line .cm  { color: var(--text-faint); }
+    .code-line .nm  { color: var(--accent2); }
+
+    /* ─── LIVE GITHUB STATS ─── */
+    .gh-live-bar {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 10.5px; font-family: 'JetBrains Mono', monospace;
+      color: var(--text-faint);
+    }
+    .lang-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%; flex-shrink: 0;
+    }
+
+    /* ─── LIGHTBOX ─── */
+    .lb-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 2000;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+      backdrop-filter: blur(8px);
+    }
+    .lb-overlay.active { opacity: 1; pointer-events: all; }
+    .lb-inner {
+      position: relative;
+      max-width: min(90vw, 1000px);
+      display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    }
+    .lb-img {
+      max-width: 100%; max-height: 76vh;
+      border-radius: 12px; object-fit: contain;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+    }
+    .lb-caption {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; color: var(--text-muted); text-align: center;
+    }
+    .lb-dots { display: flex; gap: 7px; }
+    .lb-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--text-faint); cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .lb-dot.active { background: var(--accent); transform: scale(1.35); }
+    .lb-close {
+      position: fixed; top: 18px; right: 22px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: var(--text); font-size: 18px; line-height: 1;
+      cursor: pointer; border-radius: 8px; padding: 8px 13px;
+      transition: background 0.2s;
+    }
+    .lb-close:hover { background: rgba(255,255,255,0.16); }
+    .lb-arrow {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text); font-size: 24px; cursor: pointer;
+      border-radius: 10px; padding: 14px 18px;
+      transition: background 0.2s; user-select: none;
+    }
+    .lb-arrow:hover { background: rgba(255,255,255,0.14); }
+    .lb-arrow:disabled { opacity: 0.2; cursor: default; }
+    #lb-prev { left: 16px; }
+    #lb-next { right: 16px; }
   </style>
 </head>
 <body>
@@ -796,6 +920,13 @@
 
         <!-- RLHF -->
         <a class="project-card" href="https://github.com/sid-raj-uc/RLHF" target="_blank">
+          <div class="card-preview card-preview--code">
+            <div class="code-line"><span class="kw">python</span> sft_trainer.py <span class="str">--model</span> llama-2-7b</div>
+            <div class="code-line"><span class="cm"># stage 2: reward model (Bradley-Terry)</span></div>
+            <div class="code-line"><span class="kw">python</span> reward_model.py <span class="str">--agreement</span> <span class="nm">0.82</span></div>
+            <div class="code-line"><span class="cm"># stage 3: PPO + KL divergence penalty</span></div>
+            <div class="code-line"><span class="kw">python</span> ppo_trainer.py <span class="str">--kl-coef</span> <span class="nm">0.1</span></div>
+          </div>
           <div>
             <div class="project-kind">LLM Alignment · Reinforcement Learning</div>
             <div class="project-name">RLHF Fine-tuning Pipeline for Llama-2-7B</div>
@@ -820,6 +951,7 @@
             <span class="tag">Llama-2-7B</span>
             <span class="tag">W&amp;B</span>
           </div>
+          <div class="gh-live-bar" id="stats-rlhf">—</div>
           <div class="project-footer">
             <span class="gh-link">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -831,6 +963,10 @@
 
         <!-- Epipolar -->
         <a class="project-card" href="https://github.com/sid-raj-uc/match-former" target="_blank">
+          <div class="card-preview" onclick="event.preventDefault();event.stopPropagation();window.open('https://drive.google.com/file/d/1ecFQdA_PQ8D99394KgNe6u9hgK8l482N/view?usp=sharing','_blank')">
+            <img src="https://raw.githubusercontent.com/sid-raj-uc/match-former/main/output-2.png" alt="Epipolar match output" loading="lazy">
+            <div class="preview-overlay"><span class="preview-overlay-text">▶ View Report</span></div>
+          </div>
           <div>
             <div class="project-kind">Computer Vision · Transformers · Geometry</div>
             <div class="project-name">Epipolar Geometry in MatchFormer</div>
@@ -855,9 +991,10 @@
             <span class="tag">Fundamental Matrix</span>
             <span class="tag">Focal Loss</span>
           </div>
+          <div class="gh-live-bar" id="stats-matchformer">—</div>
           <div class="project-footer">
             <span class="gh-link">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.605-.015-2.895-.015-3.3 0-.315.225-.69.825-.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
               View on GitHub →
             </span>
             <span class="project-date">Jan – Mar 2026</span>
@@ -866,6 +1003,14 @@
 
         <!-- CIFAR MLOps -->
         <a class="project-card" href="https://github.com/sid-raj-uc/cifar-cnn-analysis" target="_blank">
+          <div class="card-preview card-preview--code" onclick="event.preventDefault();event.stopPropagation();window.open('./cnn-visualizer/index.html','_blank')" style="cursor:pointer">
+            <div class="code-line"><span class="kw">python</span> train.py <span class="str">--epochs</span> <span class="nm">50</span> <span class="str">--acc</span> <span class="nm">93%</span></div>
+            <div class="code-line"><span class="cm"># export to ONNX for prod inference</span></div>
+            <div class="code-line"><span class="kw">torch.onnx.export</span>(model, x, <span class="str">"cifar.onnx"</span>)</div>
+            <div class="code-line"><span class="cm"># FastAPI → Docker → AWS ECS/ECR</span></div>
+            <div class="code-line"><span class="nm">uvicorn</span> app:app <span class="str">--host</span> 0.0.0.0 <span class="str">--port</span> <span class="nm">8000</span></div>
+            <div class="preview-overlay"><span class="preview-overlay-text">▶ Live Demo</span></div>
+          </div>
           <div>
             <div class="project-kind">Computer Vision · MLOps · Deployment</div>
             <div class="project-name">Image Classification MLOps Pipeline</div>
@@ -889,6 +1034,7 @@
             <span class="tag">AWS ECS</span>
             <span class="tag">Docker</span>
           </div>
+          <div class="gh-live-bar" id="stats-cifar">—</div>
           <div class="project-footer">
             <span class="gh-link">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -900,6 +1046,10 @@
 
         <!-- NLP Feedback -->
         <a class="project-card" href="https://github.com/sid-raj-uc/feedback-analyzer" target="_blank">
+          <div class="card-preview" onclick="event.preventDefault();event.stopPropagation();window.open('./Feedback-analyzer/index.html','_blank')">
+            <img src="https://raw.githubusercontent.com/sid-raj-uc/feedback-analyzer/main/UI-Images/image.png" alt="Feedback analyzer dashboard" loading="lazy">
+            <div class="preview-overlay"><span class="preview-overlay-text">▶ Live Demo</span></div>
+          </div>
           <div>
             <div class="project-kind">NLP · Topic Modeling · Analytics</div>
             <div class="project-name">NLP Customer Feedback Analyzer</div>
@@ -924,6 +1074,7 @@
             <span class="tag">HDBSCAN</span>
             <span class="tag">Flask</span>
           </div>
+          <div class="gh-live-bar" id="stats-feedback">—</div>
           <div class="project-footer">
             <span class="gh-link">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -935,6 +1086,10 @@
 
         <!-- Parallel Ray Tracer -->
         <a class="project-card" href="https://github.com/sid-raj-uc/parallel-raytracer" target="_blank">
+          <div class="card-preview" onclick="event.preventDefault();event.stopPropagation();window.open('./GoRay-Showcase-Export/index.html','_blank')">
+            <img src="https://raw.githubusercontent.com/sid-raj-uc/parallel-raytracer/main/proj3/output/output_seq_4.png" alt="Ray traced render" loading="lazy">
+            <div class="preview-overlay"><span class="preview-overlay-text">▶ Live Demo</span></div>
+          </div>
           <div>
             <div class="project-kind">Systems · Parallel Computing · Graphics</div>
             <div class="project-name">Parallel Ray Tracing Simulator</div>
@@ -957,6 +1112,7 @@
             <span class="tag">pprof</span>
             <span class="tag">Concurrency</span>
           </div>
+          <div class="gh-live-bar" id="stats-raytracer">—</div>
           <div class="project-footer">
             <span class="gh-link">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -968,6 +1124,10 @@
 
         <!-- CG Animation -->
         <a class="project-card" href="https://github.com/sid-raj-uc/cg-animation" target="_blank">
+          <div class="card-preview" onclick="openLightbox(event,['https://raw.githubusercontent.com/sid-raj-uc/cg-animation/main/lscm_diagram.png'],'LSCM UV parameterization — angle-preserving mesh mapping via Cauchy-Riemann equations')">
+            <img src="https://raw.githubusercontent.com/sid-raj-uc/cg-animation/main/lscm_diagram.png" alt="LSCM UV parameterization diagram" loading="lazy">
+            <div class="preview-overlay"><span class="preview-overlay-text">▶ View Diagram</span></div>
+          </div>
           <div>
             <div class="project-kind">Computational Math · Computer Graphics</div>
             <div class="project-name">Procedural Physics Simulation &amp; Mesh Parameterization</div>
@@ -992,6 +1152,7 @@
             <span class="tag">Procedural Shaders</span>
             <span class="tag">Sparse Matrices</span>
           </div>
+          <div class="gh-live-bar" id="stats-cg">—</div>
           <div class="project-footer">
             <span class="gh-link">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 09.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -1214,23 +1375,30 @@
     </p>
   </footer>
 
+  <!-- ─── LIGHTBOX ─── -->
+  <div class="lb-overlay" id="lightbox" onclick="if(event.target===this)closeLightbox()">
+    <button class="lb-close" onclick="closeLightbox()">✕</button>
+    <button class="lb-arrow" id="lb-prev" onclick="lbNav(-1)">&#8249;</button>
+    <div class="lb-inner">
+      <img class="lb-img" id="lb-img" src="" alt="">
+      <div class="lb-caption" id="lb-caption"></div>
+      <div class="lb-dots" id="lb-dots"></div>
+    </div>
+    <button class="lb-arrow" id="lb-next" onclick="lbNav(1)">&#8250;</button>
+  </div>
+
   <script>
-    // Intersection observer for fade-in animations
+    // ─── INTERSECTION OBSERVER ───
     const io = new IntersectionObserver((entries) => {
       entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('visible');
-          io.unobserve(e.target);
-        }
+        if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
       });
     }, { threshold: 0.08 });
-
     document.querySelectorAll('.fade-in, .stagger').forEach(el => io.observe(el));
 
-    // Active nav link on scroll
+    // ─── ACTIVE NAV ───
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-links a');
-
     const sio = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
@@ -1240,8 +1408,91 @@
         }
       });
     }, { rootMargin: '-40% 0px -55% 0px' });
-
     sections.forEach(s => sio.observe(s));
+
+    // ─── LIGHTBOX ───
+    let lbImages = [], lbIdx = 0;
+
+    function openLightbox(e, images, caption) {
+      e.preventDefault(); e.stopPropagation();
+      lbImages = images;
+      lbIdx = 0;
+      document.getElementById('lb-caption').textContent = caption;
+      renderLb();
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function lbNav(dir) {
+      lbIdx = Math.max(0, Math.min(lbImages.length - 1, lbIdx + dir));
+      renderLb();
+    }
+
+    function renderLb() {
+      document.getElementById('lb-img').src = lbImages[lbIdx];
+      document.getElementById('lb-prev').disabled = lbIdx === 0;
+      document.getElementById('lb-next').disabled = lbIdx === lbImages.length - 1;
+      document.getElementById('lb-dots').innerHTML = lbImages.map((_, i) =>
+        `<span class="lb-dot${i===lbIdx?' active':''}" onclick="lbIdx=${i};renderLb()"></span>`
+      ).join('');
+    }
+
+    document.addEventListener('keydown', e => {
+      if (!document.getElementById('lightbox').classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft')  lbNav(-1);
+      if (e.key === 'ArrowRight') lbNav(1);
+    });
+
+    // ─── LIVE GITHUB STATS ───
+    const LANG_COLORS = {
+      'Python': '#3572A5', 'Jupyter Notebook': '#DA5B0B',
+      'Go': '#00ADD8', 'JavaScript': '#F1E05A',
+      'TypeScript': '#2B7489', 'Java': '#B07219',
+    };
+
+    const REPOS = [
+      { id: 'stats-rlhf',        repo: 'sid-raj-uc/RLHF' },
+      { id: 'stats-matchformer', repo: 'sid-raj-uc/match-former' },
+      { id: 'stats-cifar',       repo: 'sid-raj-uc/cifar-cnn-analysis' },
+      { id: 'stats-feedback',    repo: 'sid-raj-uc/feedback-analyzer' },
+      { id: 'stats-raytracer',   repo: 'sid-raj-uc/parallel-raytracer' },
+      { id: 'stats-cg',          repo: 'sid-raj-uc/cg-animation' },
+    ];
+
+    function relDate(iso) {
+      const d = Math.floor((Date.now() - new Date(iso)) / 86400000);
+      if (d === 0) return 'today';
+      if (d === 1) return 'yesterday';
+      if (d < 30)  return `${d}d ago`;
+      if (d < 365) return `${Math.floor(d/30)}mo ago`;
+      return `${Math.floor(d/365)}y ago`;
+    }
+
+    (async () => {
+      for (const { id, repo } of REPOS) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        try {
+          const res = await fetch(`https://api.github.com/repos/${repo}`);
+          if (!res.ok) continue;
+          const d = await res.json();
+          const lang  = d.language || '';
+          const color = LANG_COLORS[lang] || '#888';
+          const pushed = relDate(d.pushed_at);
+          el.innerHTML =
+            `<span class="lang-dot" style="background:${color}"></span>` +
+            `<span>${lang || 'Code'}</span>` +
+            `<span style="color:var(--text-faint)">·</span>` +
+            `<span>pushed ${pushed}</span>`;
+        } catch {}
+      }
+    })();
   </script>
 
 </body>

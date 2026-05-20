@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NashCab — Nash Equilibrium in a Ride-Sharing Market</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #222636;
+      --border: #2e3348;
+      --accent: #6c8ef5;
+      --accent2: #a78bfa;
+      --green: #34d399;
+      --coral: #f87171;
+      --yellow: #fbbf24;
+      --text: #e2e8f0;
+      --muted: #8892a4;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(15,17,23,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex; align-items: center; gap: 2rem; height: 56px;
+    }
+    nav .brand { font-weight: 700; font-size: 1.15rem; color: var(--accent); letter-spacing: -0.3px; }
+    nav .brand span { color: var(--accent2); }
+    nav ul { display: flex; gap: 1.5rem; list-style: none; }
+    nav ul li a { color: var(--muted); font-size: 0.9rem; transition: color .2s; }
+    nav ul li a:hover { color: var(--text); text-decoration: none; }
+    .map-btn {
+      margin-left: auto; padding: .38rem 1rem; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 0.85rem; font-weight: 600; white-space: nowrap;
+    }
+    .map-btn:hover { opacity: .88; text-decoration: none; }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 5rem 2rem 4rem;
+      background: radial-gradient(ellipse at 50% 0%, rgba(108,142,245,0.12) 0%, transparent 70%);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-weight: 800; letter-spacing: -1px;
+      background: linear-gradient(135deg, #6c8ef5 0%, #a78bfa 50%, #f472b6 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero .subtitle { margin-top: .75rem; color: var(--muted); font-size: 1.1rem; }
+    .hero .authors { margin-top: .5rem; color: var(--muted); font-size: 0.9rem; }
+    .hero .tags { margin-top: 1.5rem; display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+    .tag {
+      padding: .3rem .9rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+      border: 1px solid;
+    }
+    .tag-blue  { background: rgba(108,142,245,.12); border-color: rgba(108,142,245,.35); color: #a5b8ff; }
+    .tag-purple{ background: rgba(167,139,250,.12); border-color: rgba(167,139,250,.35); color: #c4b5fd; }
+    .tag-green { background: rgba(52,211,153,.12);  border-color: rgba(52,211,153,.35);  color: #6ee7b7; }
+
+    /* ── SECTION ── */
+    section { padding: 4rem 2rem; max-width: 1100px; margin: 0 auto; }
+    section + section { border-top: 1px solid var(--border); }
+    .section-label {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--accent); margin-bottom: .5rem;
+    }
+    h2 { font-size: 1.9rem; font-weight: 700; letter-spacing: -.5px; margin-bottom: 1rem; }
+    h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: .75rem; color: var(--text); }
+    p  { color: var(--muted); margin-bottom: 1rem; }
+
+    /* ── STAT CARDS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem; margin: 2rem 0;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem 1.5rem;
+      transition: transform .2s, border-color .2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .stat-card .val {
+      font-size: 2rem; font-weight: 800; line-height: 1;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-card .val.green { background: linear-gradient(135deg, #34d399, #6ee7b7);
+      -webkit-background-clip: text; background-clip: text; }
+    .stat-card .val.coral { background: linear-gradient(135deg, #f87171, #fbbf24);
+      -webkit-background-clip: text; background-clip: text; }
+    .stat-card .label { font-size: 0.78rem; color: var(--muted); margin-top: .35rem; font-weight: 500; }
+
+    /* ── TABS ── */
+    .tabs { display: flex; gap: .5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .tab-btn {
+      padding: .45rem 1.1rem; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--muted); font-size: 0.85rem;
+      cursor: pointer; transition: all .2s; font-weight: 500;
+    }
+    .tab-btn:hover { border-color: var(--accent); color: var(--text); }
+    .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── IMAGE GRID ── */
+    .img-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem; margin-top: 1rem;
+    }
+    .img-grid.wide { grid-template-columns: 1fr; }
+    .img-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      transition: transform .2s, border-color .2s; cursor: zoom-in;
+    }
+    .img-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .img-card img { width: 100%; display: block; background: #fff; }
+    .img-card .caption {
+      padding: .65rem 1rem; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--border);
+    }
+
+    /* ── FLOW DIAGRAM ── */
+    .flow {
+      display: flex; align-items: center; gap: .75rem;
+      flex-wrap: wrap; margin: 1.5rem 0; justify-content: center;
+    }
+    .flow-box {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: .6rem 1.1rem;
+      font-size: 0.85rem; font-weight: 600; text-align: center;
+    }
+    .flow-box .sub { font-size: 0.72rem; color: var(--muted); font-weight: 400; margin-top: .15rem; }
+    .flow-arrow { color: var(--accent); font-size: 1.2rem; font-weight: 300; }
+
+    /* ── COMPARISON TABLE ── */
+    .compare-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: 0.88rem; }
+    .compare-table th {
+      background: var(--surface2); padding: .7rem 1rem; text-align: left;
+      border-bottom: 2px solid var(--border); font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: .8px; color: var(--muted);
+    }
+    .compare-table td {
+      padding: .65rem 1rem; border-bottom: 1px solid var(--border); color: var(--text);
+    }
+    .compare-table tr:hover td { background: var(--surface); }
+    .compare-table td:first-child { color: var(--muted); font-weight: 500; }
+    .compare-table .highlight { color: var(--green); font-weight: 700; }
+
+    /* ── INSIGHT CARDS ── */
+    .insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+    .insight {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem;
+    }
+    .insight .icon { font-size: 1.5rem; margin-bottom: .5rem; }
+    .insight h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: .4rem; }
+    .insight p  { font-size: 0.83rem; color: var(--muted); margin: 0; }
+
+    /* ── LIGHTBOX ── */
+    #lightbox {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,.88); align-items: center; justify-content: center;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img { max-width: 90vw; max-height: 88vh; border-radius: 8px; box-shadow: 0 25px 80px rgba(0,0,0,.6); }
+    #lightbox-close {
+      position: fixed; top: 1.5rem; right: 1.5rem; font-size: 2rem; color: #fff;
+      cursor: pointer; line-height: 1; opacity: .7;
+    }
+    #lightbox-close:hover { opacity: 1; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; padding: 2rem; color: var(--muted);
+      font-size: 0.82rem; border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="brand">Nash<span>Cab</span></div>
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#phase1">Phase 1</a></li>
+    <li><a href="#phase2">Phase 2</a></li>
+    <li><a href="#comparison">Comparison</a></li>
+  </ul>
+  <a href="map.html" class="map-btn">🗺 Live Map</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>NashCab</h1>
+  <div class="subtitle">Nash Equilibrium in a Ride-Sharing Market</div>
+  <div class="authors">Siddharth Raj &nbsp;·&nbsp; Aniket Agrawal &nbsp;·&nbsp; MPCS 53810 AGT, UChicago Spring 2026</div>
+  <div class="tags">
+    <span class="tag tag-blue">Mean-Field Game</span>
+    <span class="tag tag-purple">Fictitious Play</span>
+    <span class="tag tag-green">NYC TLC Data</span>
+    <span class="tag tag-blue">Backward Induction</span>
+    <span class="tag tag-purple">Price of Anarchy</span>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="section-label">Overview</div>
+  <h2>What is NashCab?</h2>
+  <p>
+    We model a ride-sharing platform (Uber/Lyft) as a <strong style="color:var(--text)">Mean-Field Game (MFG)</strong>.
+    Each driver is a strategic agent who, at every minute, decides whether to
+    <strong style="color:var(--green)">accept</strong> or <strong style="color:var(--coral)">reject</strong>
+    a randomly offered ride. Drivers don't reposition proactively — their zone changes only when they complete a trip.
+  </p>
+  <p>
+    We find the <strong style="color:var(--text)">Mean-Field Nash Equilibrium</strong>: a joint policy from
+    which no driver can unilaterally deviate to earn more, given all other drivers follow the same strategy.
+  </p>
+
+  <div class="flow">
+    <div class="flow-box">Assume µ<sub>idle</sub><div class="sub">driver distribution</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Backward Induction<div class="sub">compute V, π</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Forward Simulation<div class="sub">simulate all drivers</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">New µ<sub>idle</sub><div class="sub">emergent distribution</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:var(--accent)">Converged?<div class="sub">‖µ_new − µ_old‖₁ &lt; ε</div></div>
+  </div>
+
+  <div class="insights">
+    <div class="insight">
+      <div class="icon">🎯</div>
+      <h4>Backward Induction</h4>
+      <p>Compute V(z,t) — expected future earnings — backwards from T→0. At each step, the driver compares Q_accept vs Q_reject using a sigmoid policy.</p>
+    </div>
+    <div class="insight">
+      <div class="icon">🔄</div>
+      <h4>Forward Simulation</h4>
+      <p>Run all drivers forward using the computed policy π. Drivers scatter to destination zones after accepting rides, producing a new µ_idle distribution.</p>
+    </div>
+    <div class="insight">
+      <div class="icon">⚖️</div>
+      <h4>Nash Equilibrium</h4>
+      <p>When µ_new ≈ µ_old, we have found a fixed point. Every driver is already best-responding — no one can do better by deviating.</p>
+    </div>
+    <div class="insight">
+      <div class="icon">📉</div>
+      <h4>Price of Anarchy</h4>
+      <p>PoA = W_opt / W_MFNE measures welfare loss from selfish behavior. A PoA of 1.52 means drivers deliver only 66% of the socially optimal matching.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PHASE 1 -->
+<section id="phase1">
+  <div class="section-label">Phase 1</div>
+  <h2>Synthetic Grid City</h2>
+  <p>
+    A 7×7 grid of 49 zones with synthetic demand. Three demand profiles test how
+    spatial structure affects equilibrium behavior and the Price of Anarchy.
+  </p>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="val">49</div><div class="label">Zones (7×7 grid)</div></div>
+    <div class="stat-card"><div class="val">500</div><div class="label">Total drivers</div></div>
+    <div class="stat-card"><div class="val">500</div><div class="label">Time steps T</div></div>
+    <div class="stat-card"><div class="val green">59–139</div><div class="label">Iterations to converge</div></div>
+    <div class="stat-card"><div class="val coral">1.37</div><div class="label">PoA (hotspot)</div></div>
+    <div class="stat-card"><div class="val">31.9%</div><div class="label">Busy fraction (hotspot)</div></div>
+  </div>
+
+  <!-- Convergence -->
+  <h3 style="margin-top:2rem">Convergence</h3>
+  <p>All three profiles converge with α=0.05 and ε=0.01. Log-linear L1 decay consistent with geometric convergence.</p>
+  <div class="img-grid wide">
+    <div class="img-card" onclick="openLightbox(this)">
+      <img src="assets/phase1/convergence.png" alt="Phase 1 convergence" />
+      <div class="caption">L1 convergence of the outer fictitious-play loop — all three demand profiles</div>
+    </div>
+  </div>
+
+  <!-- Tabbed profiles -->
+  <h3 style="margin-top:2rem">Demand Profiles</h3>
+  <div class="tabs" id="p1-tabs">
+    <button class="tab-btn active" onclick="switchTab('p1','hotspot',this)">Single Hotspot</button>
+    <button class="tab-btn" onclick="switchTab('p1','uniform',this)">Uniform</button>
+    <button class="tab-btn" onclick="switchTab('p1','two',this)">Two Hotspots</button>
+  </div>
+
+  <!-- HOTSPOT -->
+  <div class="tab-panel active" id="p1-hotspot">
+    <p>Single Gaussian demand peak at the center (3,3). Center zone is demand-saturated; edge zones rarely get offers. <strong style="color:var(--text)">PoA ≈ 1.37</strong>.</p>
+    <div class="img-grid">
+      <div class="img-card" onclick="openLightbox(this)">
+        <img src="assets/phase1/demand_hotspot.png" alt="Hotspot demand" />
+        <div class="caption">Demand X[z] — Single Hotspot</div>
+      </div>
+      <div class="img-card" onclick="openLightbox(this)">
+        <img src="assets/phase1/heatmap_hotspot.png" alt="Hotspot idle distribution" />
+        <div class="caption">Equilibrium idle distribution µ_idle — drivers accumulate at edges, center fully saturated</div>
+      </div>
+      <div class="img-card" onclick="openLightbox(this)">
+        <img src="assets/phase1/value_hotspot.png" alt="Hotspot value function" />
+        <div class="caption">Value function V(z, t=0) — center zones earn more due to high offer rates</div>
+      </div>
+      <div class="img-card" onclick="openLightbox(this)">
+        <img src="assets/phase1/policy_hotspot.png" alt="Hotspot policy" />
+        <div class="caption">Mean acceptance rate — center drivers selective (75%), edge drivers accept everything</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNIFORM -->
+  <div class="tab-panel" id="p1-uniform">
+    <p>Constant demand everywhere. All zones are equivalent so no spatial selectivity gradient exists. <strong style="color:var(--text)">PoA ≈ 1.01</strong> — selfish behavior is nearly optimal.</p>
+    <div class="img-grid">
+      <div class="img-card" onclick="openLightbox(this)">
+        <img src="assets/phase1/demand_uniform.png" alt="Uniform demand" />
+        <div class="caption">Demand X[z] — Uniform</div>
+      </div>
+      <div class="img-card" onclick="openLightbox(this)">
+        <img src="assets/phase1/heatmap_uniform.png" alt="Uniform idle distribution" />
+        <div class="caption">Equilibrium idle distribution — perfectly symmetric µ_idle ≈ 0.0045 everywhere</div>
+      </div>
+      <div class="img-card" onclick="openLightbox(this)">
+        <img src="assets/phase1/value_uniform.png" alt="Uniform value function" />
+        <div class="caption">Value function V(z, t=0) — spatially flat, all zones equivalent</div>
+      </div>
+      <div class="img-card" onclick="openLightbox(this)">
+        <img src="assets/phase1/policy_uniform.png" alt="Uniform policy" />
+        <div class="caption">Mean acceptance rate — homogeneous, no strategic selectivity</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TWO HOTSPOT -->
+  <div class="tab-panel" id="p1-two">
+    <p>Two Gaussian demand peaks at (3,3) and (1,5). Drivers must choose which center to serve, slightly increasing strategic selectivity. <strong style="color:var(--text)">PoA ≈ 1.40</strong>.</p>
+    <div class="img-grid">
+      <div class="img-card" onclick="openLightbox(this)">
+        <img src="assets/phase1/demand_two_hotspot.png" alt="Two hotspot demand" />
+        <div class="caption">Demand X[z] — Two Hotspots</div>
+      </div>
+      <div class="img-card" onclick="openLightbox(this)">
+        <img src="assets/phase1/heatmap_two_hotspot.png" alt="Two hotspot idle distribution" />
+        <div class="caption">Equilibrium idle distribution — two local minima around demand peaks</div>
+      </div>
+      <div class="img-card" onclick="openLightbox(this)">
+        <img src="assets/phase1/value_two_hotspot.png" alt="Two hotspot value function" />
+        <div class="caption">Value function V(z, t=0) — two high-value regions near demand peaks</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHASE 2 -->
+<section id="phase2">
+  <div class="section-label">Phase 2</div>
+  <h2>Real NYC Data — March 11, 2025</h2>
+  <p>
+    All synthetic assumptions replaced with parameters extracted from real Uber/Lyft (HVFHV) trip records.
+    A plain Tuesday, 259 active TLC zones, full minute-level resolution.
+  </p>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="val">259</div><div class="label">Active TLC zones</div></div>
+    <div class="stat-card"><div class="val">10,979</div><div class="label">Estimated drivers</div></div>
+    <div class="stat-card"><div class="val">589K</div><div class="label">Total rides</div></div>
+    <div class="stat-card"><div class="val green">166</div><div class="label">Iterations to converge</div></div>
+    <div class="stat-card"><div class="val">61.6%</div><div class="label">Avg busy fraction</div></div>
+    <div class="stat-card"><div class="val">76.3%</div><div class="label">Mean acceptance rate</div></div>
+    <div class="stat-card"><div class="val coral">1.52</div><div class="label">Price of Anarchy</div></div>
+    <div class="stat-card"><div class="val">JFK</div><div class="label">Peak idle zone (zone 132)</div></div>
+  </div>
+
+  <div class="insights" style="margin-top:1.5rem">
+    <div class="insight">
+      <div class="icon">✈️</div>
+      <h4>JFK as Peak Idle Zone</h4>
+      <p>Drivers queue at JFK (zone 132) for high-fare Manhattan runs (~$45–60), accepting longer waits. The TLC even maintains a dedicated driver holding lot here.</p>
+    </div>
+    <div class="insight">
+      <div class="icon">🗂️</div>
+      <h4>5-Minute Ride Pool</h4>
+      <p>Phase 2 introduces age cohorts: a rejected ride re-enters the pool for up to 5 minutes before expiring. More realistic than the memoryless Phase 1 model.</p>
+    </div>
+    <div class="insight">
+      <div class="icon">🗺️</div>
+      <h4>Empirical O-D Matrix</h4>
+      <p>Destination probabilities P_dest[z,z'] come directly from the data. Most JFK trips go to Midtown — not uniform across 259 zones.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:2.5rem">Convergence</h3>
+  <p>Converged at iteration 166 with final L1 = 0.98. α=0.02 (smaller than Phase 1 to handle spiky real demand). ε=1.0 calibrated to the integer noise floor of real trip counts.</p>
+  <div class="img-grid wide">
+    <div class="img-card" onclick="openLightbox(this)">
+      <img src="assets/phase2/convergence.png" alt="Phase 2 convergence" />
+      <div class="caption">L1 convergence on March 11, 2025 data — converged at iteration 166</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:2rem">Equilibrium Results</h3>
+  <div class="img-grid">
+    <div class="img-card" onclick="openLightbox(this)">
+      <img src="assets/phase2/heatmap_mu.png" alt="Idle distribution" />
+      <div class="caption">Time-averaged idle fraction across 259 zones — JFK (132) dominates, Midtown near zero</div>
+    </div>
+    <div class="img-card" onclick="openLightbox(this)">
+      <img src="assets/phase2/value_function.png" alt="Value function" />
+      <div class="caption">V(z, t=0) — expected full-day earnings by starting zone. Airport zones highest.</div>
+    </div>
+  </div>
+  <div class="img-grid" style="margin-top:1rem">
+    <div class="img-card" onclick="openLightbox(this)">
+      <img src="assets/phase2/idle_over_day.png" alt="Idle over day" />
+      <div class="caption">Citywide idle fraction by hour — rush hours (7–9am, 5–8pm) have fewest idle drivers</div>
+    </div>
+    <div class="img-card" onclick="openLightbox(this)">
+      <img src="assets/phase2/acceptance_rate.png" alt="Acceptance rate" />
+      <div class="caption">Citywide mean acceptance rate — drivers most selective during rush hour, near 1.0 at 3am</div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section id="comparison">
+  <div class="section-label">Phase 1 vs Phase 2</div>
+  <h2>Comparison</h2>
+  <p>Real NYC demand is far spikier than synthetic demand, creating stronger incentives to cluster and widening the gap between selfish and optimal outcomes.</p>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Dimension</th>
+        <th>Phase 1</th>
+        <th>Phase 2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Zones</td><td>49 synthetic (7×7 grid)</td><td>259 real TLC zones</td></tr>
+      <tr><td>Time horizon</td><td>T = 500 steps</td><td>T = 1440 minutes (full day)</td></tr>
+      <tr><td>Demand X[z,t]</td><td>Gaussian hotspot (stationary)</td><td>Real trip counts (time-varying)</td></tr>
+      <tr><td>Fare model</td><td>γ · Manhattan distance</td><td>Median driver_pay from data</td></tr>
+      <tr><td>Trip duration</td><td>Manhattan distance / fixed speed</td><td>Median trip_time from data</td></tr>
+      <tr><td>Destination dist.</td><td>Uniform 1/(n−1)</td><td>Empirical O-D matrix P_dest</td></tr>
+      <tr><td>Ride persistence</td><td>Discard on reject</td><td>5-minute pool (5 age cohorts)</td></tr>
+      <tr><td>Driver count N</td><td>500 (chosen)</td><td>10,979 (estimated from data)</td></tr>
+      <tr><td>α (smoothing)</td><td>0.05</td><td>0.02</td></tr>
+      <tr><td>ε (convergence)</td><td>0.01</td><td>1.0</td></tr>
+      <tr><td>Iterations</td><td>59–139</td><td>166</td></tr>
+      <tr><td>Busy fraction</td><td>31.9% (hotspot)</td><td>61.6%</td></tr>
+      <tr><td><strong>Price of Anarchy</strong></td><td>≈ 1.37 (hotspot)</td><td class="highlight">1.52</td></tr>
+    </tbody>
+  </table>
+
+  <div class="insights" style="margin-top:2rem">
+    <div class="insight">
+      <div class="icon">📈</div>
+      <h4>Why is Real-World PoA Higher?</h4>
+      <p>Real NYC demand is spiky — airports and Midtown generate a disproportionate share of trips. This creates stronger clustering incentives, widening the gap between selfish and optimal matching.</p>
+    </div>
+    <div class="insight">
+      <div class="icon">🔧</div>
+      <h4>Why Smaller α and Larger ε?</h4>
+      <p>Integer trip counts create a noise floor in the forward simulation. A larger α amplifies this noise causing oscillation. ε=1.0 is calibrated to this floor — it represents genuine convergence, not a loose threshold.</p>
+    </div>
+    <div class="insight">
+      <div class="icon">🏙️</div>
+      <h4>34% Welfare Loss</h4>
+      <p>PoA = 1.52 means the selfish equilibrium delivers only 66% of the socially optimal ride matching. A central planner could match 52% more rides with the same number of drivers.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  NashCab &nbsp;·&nbsp; MPCS 53810 Algorithmic Game Theory &nbsp;·&nbsp; University of Chicago, Spring 2026<br/>
+  Siddharth Raj &nbsp;·&nbsp; Aniket Agrawal
+</footer>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()">
+  <span id="lightbox-close" onclick="closeLightbox()">×</span>
+  <img id="lightbox-img" src="" alt="" />
+</div>
+
+<script>
+  function switchTab(phase, name, btn) {
+    document.querySelectorAll(`#${phase}-tabs .tab-btn`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll(`[id^="${phase}-"]`).forEach(p => {
+      if (p.classList.contains('tab-panel')) p.classList.remove('active');
+    });
+    document.getElementById(`${phase}-${name}`).classList.add('active');
+  }
+
+  function openLightbox(card) {
+    const img = card.querySelector('img');
+    document.getElementById('lightbox-img').src = img.src;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+</body>
+</html>

@@ -637,6 +637,7 @@
     .stagger.visible > *:nth-child(4) { opacity:1; transform:none; transition-delay: 0.32s; }
     .stagger.visible > *:nth-child(5) { opacity:1; transform:none; transition-delay: 0.38s; }
     .stagger.visible > *:nth-child(6) { opacity:1; transform:none; transition-delay: 0.44s; }
+    .stagger.visible > *:nth-child(7) { opacity:1; transform:none; transition-delay: 0.50s; }
 
 /* ─── ICONS (inline SVG helpers) ─── */
     .icon { display: inline-block; vertical-align: middle; }
@@ -995,6 +996,46 @@
               View on GitHub →
             </span>
             <span class="project-date">Jan – Mar 2026</span>
+          </div>
+        </a>
+
+        <!-- NashCab -->
+        <a class="project-card" href="https://github.com/sid-raj-uc/NashCab" target="_blank">
+          <div class="card-preview" onclick="event.preventDefault();event.stopPropagation();window.open('./nash-cabs/index.html','_blank')">
+            <img src="./nash-cabs/screenshot.png" alt="NashCab NYC idle driver heatmap" loading="lazy">
+            <div class="preview-overlay"><span class="preview-overlay-text">▶ Live Demo</span></div>
+          </div>
+          <div>
+            <div class="project-kind">Game Theory · Data Science · NYC Data</div>
+            <div class="project-name">NashCab — Nash Equilibrium in Ride-Sharing</div>
+          </div>
+          <p class="project-desc">
+            Modeled Uber/Lyft as a Mean-Field Game over 259 NYC TLC zones using real HVFHV trip data.
+            Backward induction + fictitious play finds the Nash equilibrium in 166 iterations — drivers
+            at JFK queue for high-fare Manhattan runs. Interactive map shows driver redistribution
+            and hourly demand across the city.
+          </p>
+          <div class="metrics">
+            <span class="chip">PoA = 1.52</span>
+            <span class="chip">589K rides</span>
+            <span class="chip">166 iters</span>
+            <span class="chip">10,979 drivers</span>
+          </div>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">D3.js</span>
+            <span class="tag">Mean-Field Game</span>
+            <span class="tag">Backward Induction</span>
+            <span class="tag">NYC TLC Data</span>
+            <span class="tag">Fictitious Play</span>
+          </div>
+          <div class="gh-live-bar" id="stats-nashcab">—</div>
+          <div class="project-footer">
+            <span class="gh-link">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+              View on GitHub →
+            </span>
+            <span class="project-date">Spring 2026</span>
           </div>
         </a>
 
@@ -1456,6 +1497,7 @@
       { id: 'stats-feedback',    repo: 'sid-raj-uc/feedback-analyzer' },
       { id: 'stats-raytracer',   repo: 'sid-raj-uc/parallel-raytracer' },
       { id: 'stats-cg',          repo: 'sid-raj-uc/cg-animation' },
+      { id: 'stats-nashcab',     repo: 'sid-raj-uc/NashCab' },
     ];
 
     function relDate(iso) {

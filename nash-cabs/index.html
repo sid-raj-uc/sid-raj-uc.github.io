@@ -198,6 +198,136 @@
       text-align: center; padding: 2rem; color: var(--muted);
       font-size: 0.82rem; border-top: 1px solid var(--border);
     }
+
+    /* ── PILL TOOLTIPS ── */
+    .pill-tip {
+      display: inline-block;
+      background: rgba(108,142,245,.12); border: 1px solid rgba(108,142,245,.35);
+      color: #a5b8ff; border-radius: 6px; padding: .05rem .45rem;
+      font-size: 0.88rem; font-weight: 600; cursor: pointer;
+      position: relative; white-space: nowrap;
+    }
+    .pill-tip:hover { background: rgba(108,142,245,.22); }
+    .pill-tip-popup {
+      display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: .75rem 1rem;
+      font-size: 0.8rem; color: var(--text); font-weight: 400;
+      width: 240px; z-index: 300; line-height: 1.6;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      white-space: normal; text-align: left;
+      pointer-events: none;
+    }
+    .pill-tip-popup::after {
+      content: ''; position: absolute; top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent; border-top-color: var(--border);
+    }
+    .pill-tip.open .pill-tip-popup { display: block; }
+
+    /* ── MFG MODAL ── */
+    .mfg-link {
+      color: var(--accent); border-bottom: 1px dashed var(--accent);
+      cursor: pointer; font-weight: 600;
+    }
+    .mfg-link:hover { color: var(--accent2); border-color: var(--accent2); }
+
+    #mfg-modal {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,.75); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 1.5rem;
+    }
+    #mfg-modal.open { display: flex; }
+    .mfg-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem 2.2rem; max-width: 820px; width: 100%;
+      max-height: 90vh; overflow-y: auto; position: relative;
+    }
+    .mfg-box h3 { font-size: 1.35rem; font-weight: 700; margin-bottom: .3rem; }
+    .mfg-box .mfg-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.6rem; }
+    .mfg-close {
+      position: absolute; top: 1rem; right: 1.2rem;
+      font-size: 1.5rem; cursor: pointer; color: var(--muted); line-height: 1;
+    }
+    .mfg-close:hover { color: var(--text); }
+
+    /* diagram shared */
+    .mfg-diagrams { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    @media(max-width:600px){ .mfg-diagrams { grid-template-columns: 1fr; } }
+    .diag {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.2rem 1rem 1rem;
+    }
+    .diag-title {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; text-align: center;
+    }
+
+    /* diagram A — N-player vs MFG */
+    .players-row { display: flex; justify-content: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .6rem; }
+    .player-dot {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700; border: 2px solid;
+    }
+    .player-dot.you { background: rgba(108,142,245,.2); border-color: var(--accent); color: var(--accent); }
+    .player-dot.other { background: rgba(142,146,164,.1); border-color: var(--border); color: var(--muted); }
+    .lines-grid {
+      display: grid; grid-template-columns: repeat(5,1fr); gap: 3px;
+      margin: .5rem auto; width: fit-content;
+    }
+    .line-seg {
+      width: 24px; height: 3px; border-radius: 2px;
+      background: rgba(108,142,245,.25);
+    }
+    .diag-label { text-align: center; font-size: 0.76rem; color: var(--muted); margin-top: .5rem; }
+    .diag-vs { text-align: center; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 1px; color: var(--accent2); margin: .7rem 0; }
+    .mu-bar-wrap { margin: .6rem auto; width: 80%; }
+    .mu-bar-label { font-size: 0.7rem; color: var(--muted); margin-bottom: .25rem; }
+    .mu-bar { height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 100%; }
+    .mu-bar.w40 { width: 40%; } .mu-bar.w70 { width: 70%; }
+    .mu-bar.w55 { width: 55%; } .mu-bar.w30 { width: 30%; }
+    .mu-bar.w85 { width: 85%; } .mu-bar.w20 { width: 20%; }
+
+    /* diagram B — fixed-point loop */
+    .fp-loop { display: flex; flex-direction: column; align-items: center; gap: .15rem; }
+    .fp-node {
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: .45rem 1.1rem;
+      font-size: 0.82rem; font-weight: 600; text-align: center; width: 180px;
+    }
+    .fp-node.accent { border-color: var(--accent); color: var(--accent); }
+    .fp-node.green  { border-color: var(--green);  color: var(--green); }
+    .fp-arrow { font-size: 0.85rem; color: var(--muted); }
+    .fp-arrow span { font-size: 0.7rem; color: var(--muted); margin-left: .3rem; }
+    .fp-check { font-size: 0.75rem; color: var(--green); margin-top: .5rem; text-align: center; }
+
+    /* diagram C — intuition: why MFG works */
+    .crowd-vis { display: flex; justify-content: center; align-items: flex-end; gap: 6px; margin: .5rem 0 .3rem; }
+    .crowd-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .crowd-bar {
+      width: 22px; border-radius: 3px 3px 0 0;
+      background: linear-gradient(to top, var(--accent), var(--accent2));
+      opacity: .7;
+    }
+    .crowd-bar-lbl { font-size: 0.6rem; color: var(--muted); }
+    .arrow-down { text-align: center; color: var(--accent); font-size: 1rem; margin: .3rem 0; }
+    .single-player {
+      margin: .4rem auto; width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(108,142,245,.15); border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    /* diagram D — NE condition */
+    .ne-row { display: flex; justify-content: space-around; margin: .6rem 0; }
+    .ne-cell { text-align: center; }
+    .ne-cell .ne-val { font-size: 1.3rem; font-weight: 800; }
+    .ne-cell .ne-lbl { font-size: 0.68rem; color: var(--muted); margin-top: .1rem; }
+    .ne-eq { font-size: 1.4rem; color: var(--green); display: flex; align-items: center; }
+    .ne-condition { text-align: center; font-size: 0.76rem; color: var(--muted); margin-top: .6rem; padding: .5rem; background: var(--bg); border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -233,7 +363,7 @@
   <div class="section-label">Overview</div>
   <h2>What is NashCab?</h2>
   <p>
-    We model a ride-sharing platform (Uber/Lyft) as a <strong style="color:var(--text)">Mean-Field Game (MFG)</strong>.
+    We model a ride-sharing platform (Uber/Lyft) as a <span class="mfg-link" onclick="document.getElementById('mfg-modal').classList.add('open')">Mean-Field Game (MFG)</span>.
     Each driver is a strategic agent who, at every minute, decides whether to
     <strong style="color:var(--green)">accept</strong> or <strong style="color:var(--coral)">reject</strong>
     a randomly offered ride. Drivers don't reposition proactively — their zone changes only when they complete a trip.
@@ -297,9 +427,20 @@
     <div class="stat-card"><div class="val">31.9%</div><div class="label">Busy fraction (hotspot)</div></div>
   </div>
 
+  <!-- Warm start -->
+  <h3 style="margin-top:2rem">Initialization — Warm Start</h3>
+  <div class="flow" style="margin:1rem 0">
+    <div class="flow-box">µ[z,0] = 1/500<div class="sub">uniform across all 49 zones</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Always-accept sim<div class="sub">run T=500 steps</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:var(--accent)">Consistent µ[z,t]<div class="sub">realistic trajectory for t=1…500</div></div>
+  </div>
+  <p>We start with every driver spread uniformly — 1/500 of drivers at each of the 49 zones at t=0. We can't just hold this uniform distribution for all T steps because by t=250, drivers have been moving for 250 steps and the real distribution looks nothing like uniform. Using uniform throughout would make the first backward pass compute p_offer values ~3–4× off at mid-horizon, and the outer loop never recovers. So we first run one forward simulation under an always-accept policy to get a physically consistent starting trajectory, then begin the fictitious play loop from there.</p>
+
   <!-- Convergence -->
   <h3 style="margin-top:2rem">Convergence</h3>
-  <p>All three profiles converge with α=0.05 and ε=0.01. Log-linear L1 decay consistent with geometric convergence.</p>
+  <p>All three profiles converge with <span class="pill-tip" data-tip="Smoothing rate for the outer loop update.<br><br>µ_new = α·µ̂ + (1−α)·µ<br><br>Each iteration, the new mean field is mixed with the old one. Smaller α = more conservative steps, slower but more stable.">α = 0.05</span> and <span class="pill-tip" data-tip="Convergence threshold.<br><br>The outer loop stops when:<br>‖µ_new − µ_old‖₁ &lt; ε<br><br>Once the driver distribution changes by less than ε between iterations, we've found the equilibrium.">ε = 0.01</span>. Log-linear L1 decay consistent with geometric convergence.</p>
   <div class="img-grid wide">
     <div class="img-card" onclick="openLightbox(this)">
       <img src="assets/phase1/convergence.png" alt="Phase 1 convergence" />
@@ -325,7 +466,7 @@
       </div>
       <div class="img-card" onclick="openLightbox(this)">
         <img src="assets/phase1/heatmap_hotspot.png" alt="Hotspot idle distribution" />
-        <div class="caption">Equilibrium idle distribution µ_idle — drivers accumulate at edges, center fully saturated</div>
+        <div class="caption">Equilibrium idle distribution — center (3,3) has almost no idle drivers (demand = offers instantly), edges have the most (drivers dropped here after rides, rarely get new offers)</div>
       </div>
       <div class="img-card" onclick="openLightbox(this)">
         <img src="assets/phase1/value_hotspot.png" alt="Hotspot value function" />
@@ -333,7 +474,7 @@
       </div>
       <div class="img-card" onclick="openLightbox(this)">
         <img src="assets/phase1/policy_hotspot.png" alt="Hotspot policy" />
-        <div class="caption">Mean acceptance rate — center drivers selective (75%), edge drivers accept everything</div>
+        <div class="caption">Net drift direction of accepted rides at t=0 — drivers everywhere prefer destinations toward the hotspot at (3,3), since being near high demand means more future earnings</div>
       </div>
     </div>
   </div>
@@ -418,6 +559,17 @@
       <p>Destination probabilities P_dest[z,z'] come directly from the data. Most JFK trips go to Midtown — not uniform across 259 zones.</p>
     </div>
   </div>
+
+  <!-- Warm start -->
+  <h3 style="margin-top:2.5rem">Initialization — Warm Start</h3>
+  <div class="flow" style="margin:1rem 0">
+    <div class="flow-box">µ[z,0] ∝ pickups[z]<div class="sub">proportional to daily trips per zone</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Always-accept sim<div class="sub">run T=1440 steps</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:var(--accent)">Consistent µ[z,t] + R[z,t]<div class="sub">trajectory + ride pool for t=1…1440</div></div>
+  </div>
+  <p>Two differences from Phase 1. First, the starting distribution at t=0 is not uniform — drivers are placed proportional to total daily pickups per zone, so high-traffic zones like Midtown start with more drivers than quiet outer-borough zones. Second, Phase 2 also needs to initialize the 5-minute ride pool R[z,t] (the age-cohort backlog of unaccepted rides), not just µ. The always-accept warm start produces both together, giving the outer loop a physically consistent starting point for both the driver distribution and the ride pool.</p>
 
   <h3 style="margin-top:2.5rem">Convergence</h3>
   <p>Converged at iteration 166 with final L1 = 0.98. α=0.02 (smaller than Phase 1 to handle spiky real demand). ε=1.0 calibrated to the integer noise floor of real trip counts.</p>
@@ -506,6 +658,142 @@
   Siddharth Raj &nbsp;·&nbsp; Aniket Agrawal
 </footer>
 
+<!-- MFG MODAL -->
+<div id="mfg-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="mfg-box">
+    <span class="mfg-close" onclick="document.getElementById('mfg-modal').classList.remove('open')">×</span>
+    <h3>What is a Mean-Field Game?</h3>
+    <p class="mfg-sub">A way to find Nash equilibria when there are too many players to track individually.</p>
+
+    <div class="mfg-diagrams">
+
+      <!-- DIAGRAM A: N-player problem → MFG approximation -->
+      <div class="diag">
+        <div class="diag-title">The Core Approximation</div>
+
+        <!-- N-player: actual SVG web -->
+        <svg viewBox="0 0 220 110" width="100%" style="display:block;margin:0 auto .2rem">
+          <defs>
+            <marker id="ah" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="rgba(108,142,245,0.4)"/>
+            </marker>
+          </defs>
+          <!-- edges between all 5 nodes -->
+          <!-- positions: 0=(30,55) 1=(75,20) 2=(130,20) 3=(175,55) 4=(110,90) -->
+          <line x1="30" y1="55" x2="75"  y2="20"  stroke="rgba(108,142,245,0.3)" stroke-width="1.5"/>
+          <line x1="30" y1="55" x2="130" y2="20"  stroke="rgba(108,142,245,0.25)" stroke-width="1.5"/>
+          <line x1="30" y1="55" x2="175" y2="55"  stroke="rgba(108,142,245,0.3)" stroke-width="1.5"/>
+          <line x1="30" y1="55" x2="110" y2="90"  stroke="rgba(108,142,245,0.3)" stroke-width="1.5"/>
+          <line x1="75" y1="20" x2="130" y2="20"  stroke="rgba(108,142,245,0.2)" stroke-width="1.5"/>
+          <line x1="75" y1="20" x2="175" y2="55"  stroke="rgba(108,142,245,0.2)" stroke-width="1.5"/>
+          <line x1="75" y1="20" x2="110" y2="90"  stroke="rgba(108,142,245,0.2)" stroke-width="1.5"/>
+          <line x1="130" y1="20" x2="175" y2="55"  stroke="rgba(108,142,245,0.2)" stroke-width="1.5"/>
+          <line x1="130" y1="20" x2="110" y2="90"  stroke="rgba(108,142,245,0.2)" stroke-width="1.5"/>
+          <line x1="175" y1="55" x2="110" y2="90"  stroke="rgba(108,142,245,0.2)" stroke-width="1.5"/>
+          <!-- "you" node -->
+          <circle cx="30" cy="55" r="18" fill="rgba(108,142,245,0.15)" stroke="#6c8ef5" stroke-width="2"/>
+          <text x="30" y="59" text-anchor="middle" fill="#6c8ef5" font-size="9" font-weight="700">you</text>
+          <!-- other nodes -->
+          <circle cx="75"  cy="20" r="14" fill="rgba(142,146,164,0.1)" stroke="#2e3348" stroke-width="1.5"/>
+          <text x="75"  y="24" text-anchor="middle" fill="#8892a4" font-size="8">d₂</text>
+          <circle cx="130" cy="20" r="14" fill="rgba(142,146,164,0.1)" stroke="#2e3348" stroke-width="1.5"/>
+          <text x="130" y="24" text-anchor="middle" fill="#8892a4" font-size="8">d₃</text>
+          <circle cx="175" cy="55" r="14" fill="rgba(142,146,164,0.1)" stroke="#2e3348" stroke-width="1.5"/>
+          <text x="175" y="59" text-anchor="middle" fill="#8892a4" font-size="8">d₄</text>
+          <circle cx="110" cy="90" r="14" fill="rgba(142,146,164,0.1)" stroke="#2e3348" stroke-width="1.5"/>
+          <text x="110" y="94" text-anchor="middle" fill="#8892a4" font-size="8">d₅</text>
+        </svg>
+        <div class="diag-label">N players → O(N²) interactions to track</div>
+
+        <div class="diag-vs">↓ &nbsp;MFG approximation</div>
+
+        <!-- MFG: you vs µ bars -->
+        <svg viewBox="0 0 220 100" width="100%" style="display:block;margin:0 auto .2rem">
+          <!-- µ zone bars -->
+          <rect x="70" y="15" width="120" height="10" rx="4" fill="rgba(108,142,245,0.7)"/>
+          <rect x="70" y="30" width="80"  height="10" rx="4" fill="rgba(108,142,245,0.55)"/>
+          <rect x="70" y="45" width="100" height="10" rx="4" fill="rgba(167,139,250,0.55)"/>
+          <rect x="70" y="60" width="55"  height="10" rx="4" fill="rgba(167,139,250,0.45)"/>
+          <rect x="70" y="75" width="30"  height="10" rx="4" fill="rgba(108,142,245,0.35)"/>
+          <text x="65" y="23"  text-anchor="end" fill="#8892a4" font-size="8">z₁</text>
+          <text x="65" y="38"  text-anchor="end" fill="#8892a4" font-size="8">z₂</text>
+          <text x="65" y="53"  text-anchor="end" fill="#8892a4" font-size="8">z₃</text>
+          <text x="65" y="68"  text-anchor="end" fill="#8892a4" font-size="8">z₄</text>
+          <text x="65" y="83"  text-anchor="end" fill="#8892a4" font-size="8">z₅</text>
+          <!-- "you" node -->
+          <circle cx="26" cy="50" r="18" fill="rgba(108,142,245,0.15)" stroke="#6c8ef5" stroke-width="2"/>
+          <text x="26" y="54" text-anchor="middle" fill="#6c8ef5" font-size="9" font-weight="700">you</text>
+          <!-- arrow from you to bars -->
+          <line x1="44" y1="50" x2="62" y2="50" stroke="#6c8ef5" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <polygon points="62,46 70,50 62,54" fill="#6c8ef5"/>
+          <!-- label -->
+          <text x="196" y="52" text-anchor="end" fill="#6c8ef5" font-size="8" font-weight="700">µ(z,t)</text>
+        </svg>
+        <div class="diag-label">You only need to track <strong style="color:var(--accent)">µ</strong>, not every other driver</div>
+      </div>
+
+      <!-- DIAGRAM B: Fixed-point loop -->
+      <div class="diag">
+        <div class="diag-title">Finding the Equilibrium</div>
+        <div class="fp-loop">
+          <div class="fp-node accent">µ⁽ᵏ⁾ &nbsp;(mean field)</div>
+          <div class="fp-arrow">↓ <span>backward induction → V, π</span></div>
+          <div class="fp-node">π* &nbsp;(optimal policy)</div>
+          <div class="fp-arrow">↓ <span>forward simulate all drivers</span></div>
+          <div class="fp-node">µ̂⁽ᵏ⁺¹⁾ &nbsp;(new distribution)</div>
+          <div class="fp-arrow">↓ <span>smooth mix: α·µ̂ + (1−α)·µ</span></div>
+          <div class="fp-node green">converged? &nbsp;‖µ_new − µ‖₁ &lt; ε</div>
+        </div>
+        <div class="fp-check">✓ &nbsp;At convergence: µ* is self-consistent.<br>Playing optimally against µ* reproduces µ*.</div>
+      </div>
+
+      <!-- DIAGRAM C: Why the approximation is valid -->
+      <div class="diag">
+        <div class="diag-title">Why It Works: Law of Large Numbers</div>
+        <div class="crowd-vis">
+          <div class="crowd-bar-wrap"><div class="crowd-bar" style="height:38px"></div><div class="crowd-bar-lbl">zone 1</div></div>
+          <div class="crowd-bar-wrap"><div class="crowd-bar" style="height:62px"></div><div class="crowd-bar-lbl">zone 2</div></div>
+          <div class="crowd-bar-wrap"><div class="crowd-bar" style="height:24px"></div><div class="crowd-bar-lbl">zone 3</div></div>
+          <div class="crowd-bar-wrap"><div class="crowd-bar" style="height:80px"></div><div class="crowd-bar-lbl">zone 4</div></div>
+          <div class="crowd-bar-wrap"><div class="crowd-bar" style="height:45px"></div><div class="crowd-bar-lbl">zone 5</div></div>
+          <div class="crowd-bar-wrap"><div class="crowd-bar" style="height:18px"></div><div class="crowd-bar-lbl">zone 6</div></div>
+        </div>
+        <div class="diag-label">10,979 drivers → their spatial distribution is a smooth, deterministic µ(z,t)</div>
+        <div class="arrow-down">↓</div>
+        <div class="single-player">🚕</div>
+        <div class="diag-label" style="margin-top:.4rem">Each driver is a single atom in a sea.<br>One deviation <strong style="color:var(--accent)">doesn't move µ</strong> — so µ is taken as given.</div>
+      </div>
+
+      <!-- DIAGRAM D: Nash equilibrium condition -->
+      <div class="diag">
+        <div class="diag-title">Nash Equilibrium Condition</div>
+        <div class="ne-row">
+          <div class="ne-cell">
+            <div class="ne-val" style="color:var(--accent)">π*</div>
+            <div class="ne-lbl">best response<br>to µ*</div>
+          </div>
+          <div class="ne-eq">⇄</div>
+          <div class="ne-cell">
+            <div class="ne-val" style="color:var(--accent2)">µ*</div>
+            <div class="ne-lbl">distribution<br>induced by π*</div>
+          </div>
+        </div>
+        <div class="ne-condition">
+          If every driver plays π*, the crowd collectively<br>
+          produces exactly µ* — the distribution π* was<br>
+          computed against. <strong style="color:var(--green)">No one wants to deviate.</strong>
+        </div>
+        <div style="margin-top:.9rem;text-align:center">
+          <span style="font-size:0.8rem;color:var(--muted)">In our model:</span><br>
+          <span style="font-size:0.82rem;color:var(--text)">PoA = W<sub>opt</sub> / W<sub>Nash</sub> = <strong style="color:var(--coral)">1.52</strong></span><br>
+          <span style="font-size:0.75rem;color:var(--muted)">selfish equilibrium = 66% of social optimum</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- LIGHTBOX -->
 <div id="lightbox" onclick="closeLightbox()">
   <span id="lightbox-close" onclick="closeLightbox()">×</span>
@@ -513,6 +801,23 @@
 </div>
 
 <script>
+  // pill tooltips
+  document.querySelectorAll('.pill-tip').forEach(pill => {
+    const popup = document.createElement('div');
+    popup.className = 'pill-tip-popup';
+    popup.innerHTML = pill.dataset.tip;
+    pill.appendChild(popup);
+    pill.addEventListener('click', e => {
+      e.stopPropagation();
+      const wasOpen = pill.classList.contains('open');
+      document.querySelectorAll('.pill-tip.open').forEach(p => p.classList.remove('open'));
+      if (!wasOpen) pill.classList.add('open');
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.pill-tip.open').forEach(p => p.classList.remove('open'));
+  });
+
   function switchTab(phase, name, btn) {
     document.querySelectorAll(`#${phase}-tabs .tab-btn`).forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -534,7 +839,12 @@
     document.body.style.overflow = '';
   }
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeLightbox();
+      document.getElementById('mfg-modal').classList.remove('open');
+    }
+  });
 </script>
 </body>
 </html>

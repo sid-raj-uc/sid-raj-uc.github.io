@@ -66,7 +66,7 @@
 
     /* CANVAS */
     #map-wrap{flex:1;position:relative;overflow:hidden;background:#0d1117;}
-    canvas{position:absolute;top:0;left:0;}
+    #map-canvas{position:absolute;top:0;left:0;}
 
     /* TOOLTIP */
     #tip{position:absolute;pointer-events:none;display:none;
@@ -168,7 +168,7 @@
         <span id="leg-p100">—</span>
       </div>
       <p style="font-size:.72rem;color:var(--muted);margin-top:.4rem" id="leg-desc">
-        Normalized idle driver fraction
+        Idle driver density — % of peak zone's idle count
       </p>
     </div>
 
@@ -178,7 +178,7 @@
       <div class="stat-row"><span class="stat-key">Total drivers N</span><span class="stat-val">10,979</span></div>
       <div class="stat-row"><span class="stat-key">Total rides</span><span class="stat-val">589,841</span></div>
       <div class="stat-row"><span class="stat-key">Convergence</span><span class="stat-val">166 iters</span></div>
-      <div class="stat-row"><span class="stat-key">Peak idle zone</span><span class="stat-val">JFK (132)</span></div>
+      <div class="stat-row"><span class="stat-key">Peak zone</span><span class="stat-val" id="peak-zone-lbl">JFK (132)</span></div>
       <div class="stat-row"><span class="stat-key">Price of Anarchy</span>
         <span class="stat-val" style="color:#f87171">1.52</span></div>
     </div>
@@ -213,7 +213,7 @@ function rgbStr(v){ const [r,g,b]=valToRgb(v); return `rgb(${r},${g},${b})`; }
 let _ranks = {}, _sortedVals = [];
 function buildRanks() {
   if (!VIZ) return;
-  const ids = VIZ.zone_ids;
+  const ids = VIZ.zone_ids.filter(id => id !== 265);   // zone 265 merged into zone 1
   const pairs = ids.map((id, i) => ({ id, v: getVal(id) }))
                    .sort((a, b) => a.v - b.v);
   const n = pairs.length;
@@ -531,6 +531,8 @@ async function init(){
   render();
   drawConvChart();
   document.getElementById('loading').classList.add('hidden');
+  // Drive the pulsing ring even when the play animation is paused
+  (function pulse(){ render(); requestAnimationFrame(pulse); })();
   window.addEventListener('resize', ()=>{buildProjection();buildPaths();render();drawConvChart();});
   document.getElementById('map-wrap').addEventListener('mousemove', onMouseMove);
   document.getElementById('map-wrap').addEventListener('mouseleave', ()=>{ document.getElementById('tip').style.display='none'; });
@@ -560,7 +562,7 @@ function buildPaths(){
 }
 
 // ── Get zone value ────────────────────────────────────────────────────────────
-function getVal(locationId){
+function getRawVal(locationId){
   if(!VIZ) return 0;
   const idx=VIZ.zone_ids.indexOf(locationId);
   if(idx===-1) return 0;
@@ -572,6 +574,13 @@ function getVal(locationId){
   } else {
     return VIZ.hourly_mu[String(curHour)]?.[idx]??0;
   }
+}
+
+function getVal(locationId){
+  if(locationId===265) return 0;               // merged into zone 1, exclude from map
+  const v = getRawVal(locationId);
+  if(locationId===1) return Math.max(v, getRawVal(265));  // Newark = max(zone 1, zone 265)
+  return v;
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
@@ -593,6 +602,116 @@ function render(){
     ctx.lineWidth=0.6*devicePixelRatio;
     ctx.stroke(p);
   });
+  try { drawPeakArrow(ctx); } catch(e) { console.warn('drawPeakArrow:', e); }
+}
+
+// Known names for TLC zones that exist in trip data but have no shapefile geometry
+
+function drawPeakArrow(ctx) {
+  const peakId = Object.entries(_ranks).reduce((best, [id, r]) => r > (best.r ?? -1) ? {id: +id, r} : best, {}).id;
+  if (!peakId) return;
+  const feat = GEO.features.find(f => f.properties.LocationID === peakId);
+  if (!feat) return;
+
+  const lbl = document.getElementById('peak-zone-lbl');
+  if (lbl) { lbl.textContent = `${feat.properties.zone} (${peakId})`; lbl.style.color = ''; }
+
+  const canvas = document.getElementById('map-canvas');
+  const [cx, cy] = projection(d3.geoCentroid(feat));
+  const dpr   = devicePixelRatio;
+  const label = feat.properties.zone;
+
+  ctx.save();
+
+  // ── Pulsing ring at zone centroid ──────────────────────────────────────────
+  const t      = (Date.now() % 1800) / 1800;
+  const ringR  = (10 + t * 14) * dpr;
+  const ringA  = 0.55 * (1 - t);
+  ctx.beginPath();
+  ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(255,255,255,${ringA})`;
+  ctx.lineWidth   = 1.5 * dpr;
+  ctx.stroke();
+
+  // ── Solid dot ─────────────────────────────────────────────────────────────
+  ctx.shadowColor = 'rgba(255,255,255,0.55)';
+  ctx.shadowBlur  = 10 * dpr;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 5 * dpr, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // ── Stem ──────────────────────────────────────────────────────────────────
+  const stemH  = 52 * dpr;
+  const stemY0 = cy  - 6  * dpr;
+  const stemY1 = stemY0 - stemH;
+
+  ctx.beginPath();
+  ctx.moveTo(cx, stemY0);
+  ctx.lineTo(cx, stemY1);
+  ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+  ctx.lineWidth   = 1.5 * dpr;
+  ctx.stroke();
+
+  // ── Label card ────────────────────────────────────────────────────────────
+  const tagFont  = `600 ${10.5 * dpr}px -apple-system,sans-serif`;
+  const capFont  = `500 ${8 * dpr}px -apple-system,sans-serif`;
+  ctx.font = tagFont;
+  const labelW   = ctx.measureText(label).width;
+  const padX = 10 * dpr, padY = 7 * dpr, gap = 4 * dpr;
+  ctx.font = capFont;
+  const capW  = ctx.measureText('PEAK ZONE').width;
+  const cardW = Math.max(labelW, capW) + padX * 2;
+  const cardH = (10.5 + 8) * dpr + padY * 2 + gap;
+  const cardR = 8 * dpr;
+  let   cardX = cx - cardW / 2;
+  const cardY = stemY1 - cardH;
+
+  // clamp horizontally
+  cardX = Math.max(4 * dpr, Math.min(canvas.width - cardW - 4 * dpr, cardX));
+
+  // card shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.45)';
+  ctx.shadowBlur  = 14 * dpr;
+  ctx.shadowOffsetY = 4 * dpr;
+
+  // card background
+  ctx.fillStyle = 'rgba(8,13,30,0.88)';
+  ctx.beginPath();
+  ctx.moveTo(cardX + cardR, cardY);
+  ctx.lineTo(cardX + cardW - cardR, cardY);
+  ctx.arcTo(cardX + cardW, cardY,          cardX + cardW, cardY + cardR,          cardR);
+  ctx.lineTo(cardX + cardW, cardY + cardH - cardR);
+  ctx.arcTo(cardX + cardW, cardY + cardH,  cardX + cardW - cardR, cardY + cardH,  cardR);
+  ctx.lineTo(cardX + cardR, cardY + cardH);
+  ctx.arcTo(cardX,          cardY + cardH, cardX, cardY + cardH - cardR,          cardR);
+  ctx.lineTo(cardX,         cardY + cardR);
+  ctx.arcTo(cardX,          cardY,         cardX + cardR, cardY,                  cardR);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+  // card border
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.lineWidth   = 1 * dpr;
+  ctx.stroke();
+
+  // "PEAK ZONE" caption
+  const midX = cardX + cardW / 2;
+  ctx.font        = capFont;
+  ctx.textAlign   = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle   = 'rgba(108,142,245,0.9)';
+  ctx.fillText('PEAK ZONE', midX, cardY + padY);
+
+  // Zone name
+  ctx.font      = tagFont;
+  ctx.fillStyle = '#fff';
+  ctx.fillText(label, midX, cardY + padY + 8 * dpr + gap);
+
+  ctx.restore();
 }
 
 // ── Mouse hover ───────────────────────────────────────────────────────────────
@@ -620,7 +739,17 @@ function onMouseMove(e){
     tip.style.top=(e.clientY-rect.top-10)+'px';
     const pctRank = _ranks[id] ?? 0;
     const rawFmt = v < 0.001 ? (v*1000).toFixed(1)+'‰' : (v*100).toFixed(2)+'%';
-    tip.innerHTML=`<strong>${found.properties.zone} (${id})</strong>${found.properties.borough}<br/>Value: ${rawFmt} &nbsp;<span style="color:var(--muted);font-size:.75em">top ${(100*(1-pctRank)).toFixed(0)}%</span>`;
+    const metricLabel = mode === 'demand'
+      ? 'Ride demand'
+      : mode === 'idle'
+      ? 'Idle drivers'
+      : 'Idle density';
+    const metricDesc = mode === 'demand'
+      ? 'of peak demand this hour'
+      : mode === 'idle'
+      ? 'of peak idle zone this hour'
+      : 'of peak idle zone this iteration';
+    tip.innerHTML=`<strong>${found.properties.zone} (${id})</strong>${found.properties.borough}<br/>${metricLabel}: ${rawFmt} <span style="color:var(--muted);font-size:.75em">of peak &nbsp;·&nbsp; top ${(100*(1-pctRank)).toFixed(0)}%</span><br/><span style="color:var(--muted);font-size:.72em">${metricDesc}</span>`;
   } else {
     tip.style.display='none';
   }
@@ -683,13 +812,13 @@ function setMode(m,btn){
   if(m==='demand'){
     document.getElementById('time-title').textContent='Hourly Demand';
     document.getElementById('time-desc').textContent='Ride requests by zone across the day.';
-    document.getElementById('leg-desc').textContent='Normalized ride demand';
+    document.getElementById('leg-desc').textContent='Ride demand — % of busiest zone that hour';
   } else if(m==='idle'){
     document.getElementById('time-title').textContent='Idle Driver Distribution';
     document.getElementById('time-desc').textContent='Equilibrium idle drivers by hour.';
-    document.getElementById('leg-desc').textContent='Normalized idle driver fraction';
+    document.getElementById('leg-desc').textContent='Idle drivers — % of idlest zone that hour';
   } else {
-    document.getElementById('leg-desc').textContent='Normalized idle driver fraction';
+    document.getElementById('leg-desc').textContent='Idle driver density — % of peak zone\'s idle count';
   }
   render();
 }

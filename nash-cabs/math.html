@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NashCab — MFG Math</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$',  right: '$',  display: false}
+      ],
+      throwOnError: false
+    })"></script>
+
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #222636;
+      --border: #2e3348; --accent: #6c8ef5; --accent2: #a78bfa;
+      --green: #34d399; --coral: #f87171;
+      --text: #e2e8f0; --muted: #8892a4; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.6;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(15,17,23,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem; display: flex; align-items: center; gap: 2rem; height: 56px;
+    }
+    nav .brand { font-weight: 700; font-size: 1.15rem; color: var(--accent); letter-spacing: -.3px; }
+    nav .brand span { color: var(--accent2); }
+    nav ul { display: flex; gap: 1.5rem; list-style: none; }
+    nav ul li a { color: var(--muted); font-size: .9rem; transition: color .2s; }
+    nav ul li a:hover { color: var(--text); text-decoration: none; }
+    .nav-btn {
+      margin-left: auto; padding: .38rem 1rem; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); font-size: .85rem; font-weight: 600; white-space: nowrap;
+    }
+    .nav-btn:hover { color: var(--text); text-decoration: none; border-color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      text-align: center; padding: 4rem 2rem 3rem;
+      background: radial-gradient(ellipse at 50% 0%, rgba(108,142,245,.1) 0%, transparent 65%);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -.5px;
+      background: linear-gradient(135deg, #6c8ef5 0%, #a78bfa 60%, #f472b6 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero .subtitle { margin-top: .6rem; color: var(--muted); font-size: 1rem; }
+
+    /* MAIN LAYOUT */
+    .page { max-width: 860px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+
+    /* TOC */
+    .toc {
+      display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+    }
+    .toc a {
+      padding: .35rem .85rem; border-radius: 999px; font-size: .8rem; font-weight: 600;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--muted); transition: all .2s;
+    }
+    .toc a:hover { color: var(--text); border-color: var(--accent); text-decoration: none; }
+
+    /* MATH BLOCKS */
+    .math-block {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.75rem 2rem; margin: 1.5rem 0;
+      scroll-margin-top: 70px;
+    }
+    .math-block h2 {
+      font-size: 1.05rem; font-weight: 700; color: var(--accent);
+      margin-bottom: 1.1rem; display: flex; align-items: center; gap: .55rem;
+    }
+    .step-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--accent); color: #fff; font-size: .75rem; font-weight: 800;
+      flex-shrink: 0;
+    }
+    .math-block p { font-size: .9rem; color: var(--muted); line-height: 1.75; margin-bottom: .8rem; }
+    .math-block p:last-child { margin-bottom: 0; }
+
+    .math-eq { text-align: center; margin: 1.1rem 0; overflow-x: auto; }
+
+    /* Setup grid */
+    .setup-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: .75rem; margin: .5rem 0 .25rem;
+    }
+    .setup-item {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 9px; padding: .8rem 1rem;
+      font-size: .83rem; color: var(--text); line-height: 1.55;
+    }
+    .setup-item .key { color: var(--accent); font-weight: 700; margin-bottom: .2rem; font-size: .75rem; letter-spacing: .5px; text-transform: uppercase; }
+
+    /* Code-style backward sweep */
+    .sweep {
+      font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+      font-size: .82rem; color: var(--muted);
+      background: var(--bg); border-radius: 9px;
+      padding: .9rem 1.4rem; margin: .85rem 0; line-height: 2.1;
+      border: 1px solid var(--border);
+    }
+    .sweep .hl { color: var(--accent); font-weight: 600; }
+
+    /* Divider */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+    /* Flow diagram */
+    .flow-diagram {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: .5rem; margin: 1.4rem 0;
+    }
+    .flow-node {
+      background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: 11px; padding: .6rem 1.15rem;
+      font-size: .84rem; text-align: center; min-width: 108px;
+    }
+    .flow-node .nl { font-weight: 700; color: var(--text); }
+    .flow-node .ns { font-size: .7rem; color: var(--muted); margin-top: .15rem; }
+    .flow-node.accent { border-color: var(--accent); }
+    .flow-node.green  { border-color: var(--green); }
+    .flow-arrow {
+      display: flex; flex-direction: column; align-items: center;
+      font-size: .68rem; color: var(--muted); gap: 1px; line-height: 1.2;
+    }
+    .flow-arrow .arr { font-size: 1.15rem; color: var(--accent2); }
+
+    /* Notation table */
+    .notation-table { width: 100%; border-collapse: collapse; font-size: .86rem; margin-top: .5rem; }
+    .notation-table th {
+      text-align: left; padding: .5rem .8rem;
+      border-bottom: 2px solid var(--border); color: var(--accent);
+      font-size: .75rem; letter-spacing: .5px; text-transform: uppercase; font-weight: 700;
+    }
+    .notation-table td { padding: .55rem .8rem; border-bottom: 1px solid var(--border); color: var(--muted); vertical-align: top; }
+    .notation-table td:first-child { color: var(--text); font-family: 'SF Mono', Consolas, monospace; white-space: nowrap; }
+    .notation-table tr:last-child td { border-bottom: none; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="brand">Nash<span>Cab</span></a>
+  <ul>
+    <li><a href="index.html#overview">Overview</a></li>
+    <li><a href="index.html#phase1">Phase 1</a></li>
+    <li><a href="index.html#phase2">Phase 2</a></li>
+    <li><a href="index.html#comparison">Comparison</a></li>
+  </ul>
+  <a href="map.html" class="nav-btn">🗺 Live Map</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>MFG Math</h1>
+  <div class="subtitle">Mean-Field Game — Backward Induction &amp; Forward Simulation</div>
+</div>
+
+<div class="page">
+
+  <!-- TOC pills -->
+  <div class="toc" aria-label="Contents">
+    <a href="#setup">Setup</a>
+    <a href="#value">① Value Function</a>
+    <a href="#backward">② Backward Induction</a>
+    <a href="#forward">③ Forward Simulation</a>
+    <a href="#fixedpoint">④ Fixed-Point Loop</a>
+    <a href="#summary">Summary</a>
+    <a href="#notation">Notation</a>
+  </div>
+
+  <!-- Setup -->
+  <div class="math-block" id="setup">
+    <h2>Setup</h2>
+    <p>
+      We model each driver as an agent in a finite-horizon discrete Mean-Field Game.
+      The key objects are:
+    </p>
+    <div class="setup-grid">
+      <div class="setup-item"><div class="key">State</div>Agent is in zone $z$ at time $t$</div>
+      <div class="setup-item"><div class="key">Action</div>$a \in \mathcal{A} = \{\text{accept},\,\text{reject}\}$</div>
+      <div class="setup-item"><div class="key">Reward</div>$r(z,a,\mu_t)$ — depends on zone, action, and crowd</div>
+      <div class="setup-item"><div class="key">Transition</div>$P(z' \mid z, a)$ — landing zone after action $a$</div>
+      <div class="setup-item"><div class="key">Horizon</div>Finite $T$ steps &nbsp;(one day = 1440 min)</div>
+      <div class="setup-item"><div class="key">Mean field</div>$\mu_t(z)$ = fraction of drivers idle in zone $z$ at time $t$</div>
+    </div>
+  </div>
+
+  <!-- Value function -->
+  <div class="math-block" id="value">
+    <h2><span class="step-badge">1</span> Value Function</h2>
+    <p>
+      $V(z,t)$ is the <em>expected total future reward</em> starting from zone $z$ at time $t$,
+      assuming you act optimally and the crowd follows $\mu$.
+    </p>
+    <p>Terminal condition — no future left at the horizon:</p>
+    <div class="math-eq">$$V(z,\, T) \;=\; 0$$</div>
+    <p>Recursive Bellman equation — the value at $t$ is the best Q-value achievable:</p>
+    <div class="math-eq">
+      $$V(z,\,t) \;=\; \max_{a \in \mathcal{A}} \Bigl[\, r(z,a,\mu_t) \;+\; \sum_{z'} P(z'\mid z,a)\; V(z',t+1) \Bigr]$$
+    </div>
+    <p>The expression inside the max defines the <strong style="color:var(--text)">Q-value</strong>:</p>
+    <div class="math-eq">
+      $$Q(z,a,t) \;=\; r(z,a,\mu_t) \;+\; \sum_{z'} P(z'\mid z,a)\; V(z',t+1)$$
+    </div>
+    <p>So compactly:</p>
+    <div class="math-eq">$$V(z,t) \;=\; \max_a\; Q(z,a,t)$$</div>
+  </div>
+
+  <!-- Backward induction -->
+  <div class="math-block" id="backward">
+    <h2><span class="step-badge">2</span> Backward Induction</h2>
+    <p>
+      $V$ is computed by sweeping from $t = T$ back to $t = 0$.
+      Each step uses the already-computed $V(\cdot,\,t+1)$ — you need the future before you can value the present.
+    </p>
+    <div class="sweep">
+      <span class="hl">t = T  :</span>  V(z, T)   = 0                         ← base case<br>
+      <span class="hl">t = T−1:</span>  V(z, T−1) = max<sub>a</sub> Q(z, a, T−1)    ← uses V(·, T)<br>
+      <span class="hl">t = T−2:</span>  V(z, T−2) = max<sub>a</sub> Q(z, a, T−2)    ← uses V(·, T−1)<br>
+      &nbsp;&nbsp;&nbsp;⋮<br>
+      <span class="hl">t = 0  :</span>  V(z, 0)   = max<sub>a</sub> Q(z, a, 0)      ← uses V(·, 1)
+    </div>
+    <p>The optimal (greedy) policy is extracted at each step:</p>
+    <div class="math-eq">$$\pi^*(z,t) \;=\; \arg\max_a\; Q(z,a,t)$$</div>
+    <p>
+      In practice a <strong style="color:var(--text)">soft policy</strong> replaces the hard argmax for numerical
+      stability — a sigmoid over the Q-value gap:
+    </p>
+    <div class="math-eq">
+      $$\pi(a = \text{accept} \mid z, t) \;=\; \sigma\!\left(\frac{Q_{\text{accept}} - Q_{\text{reject}}}{\tau}\right)$$
+    </div>
+    <p>
+      The temperature $\tau$ controls selectivity: $\tau \to 0$ recovers the hard argmax;
+      $\tau \to \infty$ gives a uniform 50/50 policy.
+    </p>
+  </div>
+
+  <!-- Forward simulation -->
+  <div class="math-block" id="forward">
+    <h2><span class="step-badge">3</span> Forward Simulation</h2>
+    <p>
+      Given policy $\pi^*$, propagate $\mu$ forward from $t = 0$ to $t = T$:
+    </p>
+    <div class="math-eq">
+      $$\mu_{t+1}(z') \;=\; \sum_z \mu_t(z) \sum_a \pi^*(a \mid z,t)\; P(z' \mid z,a)$$
+    </div>
+    <p>
+      In words: the fraction of drivers in zone $z'$ at $t{+}1$ equals the sum over all origin zones $z$
+      and all actions $a$ of
+      (fraction of drivers there) × (probability of choosing $a$) × (probability of transitioning to $z'$).
+    </p>
+    <p>
+      This propagation yields a new <em>implied</em> distribution $\hat{\mu}$ — what the crowd actually
+      looks like when everyone follows $\pi^*$.
+    </p>
+  </div>
+
+  <!-- Fixed-point loop -->
+  <div class="math-block" id="fixedpoint">
+    <h2><span class="step-badge">4</span> Fixed-Point Loop</h2>
+    <p>
+      The backward pass assumed $\mu^{(k)}$; the forward pass produced $\hat{\mu}^{(k+1)}$.
+      If they differ, we blend and repeat.
+      A damped update prevents oscillation:
+    </p>
+    <div class="math-eq">$$\mu^{(k+1)} \;=\; \alpha\,\hat{\mu}^{(k+1)} \;+\; (1-\alpha)\,\mu^{(k)}$$</div>
+    <p>Iterate until the L1 change falls below tolerance $\varepsilon$:</p>
+    <div class="math-eq">$$\bigl\|\mu^{(k+1)} - \mu^{(k)}\bigr\|_1 \;<\; \varepsilon$$</div>
+    <p>
+      At convergence $\mu^* \approx \hat{\mu}^*$ — the distribution each driver <em>assumes</em> is
+      exactly the distribution produced when everyone best-responds to it.
+      This is the <strong style="color:var(--text)">Mean-Field Nash Equilibrium</strong>.
+    </p>
+    <p>
+      Phase 1 uses $\alpha = 0.05$, $\varepsilon = 0.01$.
+      Phase 2 uses $\alpha = 0.02$ (smaller, to handle spiky real demand)
+      and $\varepsilon = 1.0$ (calibrated to the integer noise floor of real trip counts).
+    </p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Summary flow -->
+  <div class="math-block" id="summary">
+    <h2>Summary</h2>
+    <div class="flow-diagram">
+      <div class="flow-node">
+        <div class="nl">$\mu^{(k)}$</div>
+        <div class="ns">assumed crowd</div>
+      </div>
+      <div class="flow-arrow"><div class="arr">→</div><div>backward</div></div>
+      <div class="flow-node accent">
+        <div class="nl">$V,\;\pi^*$</div>
+        <div class="ns">best response</div>
+      </div>
+      <div class="flow-arrow"><div class="arr">→</div><div>forward</div></div>
+      <div class="flow-node">
+        <div class="nl">$\hat{\mu}^{(k+1)}$</div>
+        <div class="ns">implied crowd</div>
+      </div>
+      <div class="flow-arrow"><div class="arr">→</div><div>mix &amp; repeat</div></div>
+      <div class="flow-node green">
+        <div class="nl">$\mu^{(k+1)}$</div>
+        <div class="ns">next iterate</div>
+      </div>
+    </div>
+    <p style="text-align:center; font-size:.85rem; margin-top:.1rem;">
+      <strong style="color:var(--accent)">Backward</strong> — "what should I do?" given the crowd &nbsp;·&nbsp;
+      <strong style="color:var(--accent2)">Forward</strong> — "what does the crowd do?" given $\pi^*$ &nbsp;·&nbsp;
+      <strong style="color:var(--green)">Equilibrium</strong> — both answers agree
+    </p>
+  </div>
+
+  <!-- Notation reference -->
+  <div class="math-block" id="notation">
+    <h2>Notation Reference</h2>
+    <table class="notation-table">
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$z,\; z'$</td><td>Current zone and next zone (state space $\mathcal{Z}$)</td></tr>
+        <tr><td>$t$</td><td>Discrete time step, $t \in \{0,\ldots,T\}$</td></tr>
+        <tr><td>$a$</td><td>Action: accept or reject a ride offer</td></tr>
+        <tr><td>$\mu_t(z)$</td><td>Mean field — fraction of idle drivers in zone $z$ at time $t$</td></tr>
+        <tr><td>$r(z,a,\mu_t)$</td><td>Instantaneous reward; depends on zone, action, and crowd density</td></tr>
+        <tr><td>$P(z'\mid z,a)$</td><td>Transition probability: land in $z'$ from $z$ after action $a$</td></tr>
+        <tr><td>$V(z,t)$</td><td>Value function — optimal expected future reward from $(z,t)$</td></tr>
+        <tr><td>$Q(z,a,t)$</td><td>Q-value — expected reward of taking action $a$ in $(z,t)$</td></tr>
+        <tr><td>$\pi^*(z,t)$</td><td>Optimal policy — action distribution at $(z,t)$</td></tr>
+        <tr><td>$\hat{\mu}$</td><td>Implied mean field — distribution produced by forward simulation</td></tr>
+        <tr><td>$\alpha$</td><td>Mixing coefficient for damped update</td></tr>
+        <tr><td>$\varepsilon$</td><td>L1 convergence tolerance</td></tr>
+        <tr><td>$\tau$</td><td>Softmax temperature for the accept/reject policy</td></tr>
+        <tr><td>$\sigma(\cdot)$</td><td>Sigmoid function $\sigma(x) = 1/(1+e^{-x})$</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /page -->
+</body>
+</html>

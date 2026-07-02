@@ -844,7 +844,7 @@
           <div class="stat-lbl">Industry ML/SWE</div>
         </div>
         <div>
-          <div class="stat-val">6<sup>+</sup></div>
+          <div class="stat-val">7<sup>+</sup></div>
           <div class="stat-lbl">ML Research Projects</div>
         </div>
         <div>
@@ -918,6 +918,47 @@
       <div class="section-title">What I've Built</div>
 
       <div class="project-grid stagger">
+
+        <!-- GRAFT -->
+        <a class="project-card" href="https://github.com/sid-raj-uc/GRAFT" target="_blank">
+          <div class="card-preview" onclick="event.preventDefault();event.stopPropagation();window.open('./graft/index.html','_blank')">
+            <img src="./graft/screenshot.png" alt="GRAFT region-grounded SigLIP" loading="lazy">
+            <div class="preview-overlay"><span class="preview-overlay-text">▶ View Project</span></div>
+          </div>
+          <div>
+            <div class="project-kind">Vision-Language · Grounding · LoRA</div>
+            <div class="project-name">GRAFT — Region-Grounded Fine-tuning of SigLIP</div>
+          </div>
+          <p class="project-desc">
+            Taught spatial grounding into a frozen SigLIP-B/16-384 with a LoRA adapter (295K params, 0.14%)
+            and a FILIP-style region loss on phrase→bbox pairs. The dominant gain came not from the loss or
+            capacity but from eliminating train/eval representation mismatches (MaskCLIP bypass + EOS alignment) —
+            raising Flickr30k Pointing Game from 14.74% to 20.76 ± 0.41% (3-seed, 6× lower variance) and 26.16%
+            test PG at 5 epochs. Florence-2 auto-labels reach 23.35% with zero human boxes.
+          </p>
+          <div class="metrics">
+            <span class="chip">+11.4pp Pointing Game</span>
+            <span class="chip">295K params (0.14%)</span>
+            <span class="chip">6× lower variance</span>
+            <span class="chip">Florence-2 auto-labels</span>
+          </div>
+          <div class="tags">
+            <span class="tag">PyTorch</span>
+            <span class="tag">SigLIP</span>
+            <span class="tag">LoRA / PEFT</span>
+            <span class="tag">FILIP</span>
+            <span class="tag">Flickr30k</span>
+            <span class="tag">W&amp;B</span>
+          </div>
+          <div class="gh-live-bar" id="stats-graft">—</div>
+          <div class="project-footer">
+            <span class="gh-link">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+              View on GitHub →
+            </span>
+            <span class="project-date">Spring 2026</span>
+          </div>
+        </a>
 
         <!-- RLHF -->
         <a class="project-card" href="https://github.com/sid-raj-uc/RLHF" target="_blank">
@@ -1491,6 +1532,7 @@
     };
 
     const REPOS = [
+      { id: 'stats-graft',       repo: 'sid-raj-uc/GRAFT' },
       { id: 'stats-rlhf',        repo: 'sid-raj-uc/RLHF' },
       { id: 'stats-matchformer', repo: 'sid-raj-uc/match-former' },
       { id: 'stats-cifar',       repo: 'sid-raj-uc/cifar-cnn-analysis' },

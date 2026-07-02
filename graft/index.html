@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRAFT — Region-Grounded Fine-Tuning of SigLIP</title>
+  <meta name="description" content="GRAFT: teaching SigLIP-B/16-384 spatial grounding with a 295K-param LoRA adapter and a FILIP-style region loss — Pointing Game 14.74% → 26.16% by eliminating train/eval representation mismatches.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #05091a;
+      --surface:     #0b1428;
+      --card:        #0e1a33;
+      --card-hover:  #122040;
+      --accent:      #00c4cc;
+      --accent-dim:  rgba(0,196,204,0.10);
+      --accent2:     #818cf8;
+      --green:       #86efac;
+      --red:         #fca5a5;
+      --text:        #e2e8f0;
+      --text-muted:  #7b92b8;
+      --text-faint:  #4a6080;
+      --border:      #1a2f50;
+      --border-hover:#2a4870;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,196,204,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,196,204,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse at center, rgba(0,196,204,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    nav, main, footer { position: relative; z-index: 1; }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(5,9,26,0.80);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-left { display: flex; align-items: center; gap: 1.5rem; }
+    .nav-logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--text);
+      letter-spacing: -0.04em;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-back {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .nav-back:hover { color: var(--accent); border-color: var(--accent); }
+    .nav-links { display: flex; gap: 1.75rem; list-style: none; align-items: center; }
+    .nav-links a {
+      font-size: 13.5px; font-weight: 500;
+      color: var(--text-muted); text-decoration: none; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-cta {
+      padding: 6px 16px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,196,204,0.30);
+      border-radius: 6px;
+      color: var(--accent) !important;
+    }
+
+    main { padding-top: 58px; }
+    section { padding: 4rem 2rem; max-width: 1080px; margin: 0 auto; }
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.15em;
+      margin-bottom: 0.5rem;
+    }
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(22px, 3vw, 30px);
+      font-weight: 700; letter-spacing: -0.025em;
+      margin-bottom: 2rem;
+    }
+    hr.section-rule { border: none; border-top: 1px solid var(--border); max-width: 1080px; margin: 0 auto; }
+
+    /* ─── HERO ─── */
+    #hero { padding-top: 4.5rem; padding-bottom: 3rem; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px; color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,196,204,0.22);
+      border-radius: 100px; padding: 5px 14px;
+      margin-bottom: 1.75rem; width: fit-content;
+    }
+    #hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(36px, 6vw, 60px);
+      font-weight: 700; letter-spacing: -0.04em;
+      line-height: 1.05; color: var(--text);
+      margin-bottom: 1rem;
+    }
+    #hero h1 span { color: var(--accent); }
+    .hero-sub {
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--text-muted);
+      max-width: 720px; line-height: 1.75;
+      margin-bottom: 2rem;
+    }
+    .hero-cta { display: flex; gap: 0.875rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 11px 22px; border-radius: 8px;
+      font-size: 14px; font-weight: 600;
+      text-decoration: none; transition: all 0.2s; cursor: pointer;
+    }
+    .btn-primary { background: var(--accent); color: #040c1e; }
+    .btn-primary:hover { background: #10d9e2; transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,196,204,0.28); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 2rem; }
+    .tag {
+      font-size: 11.5px; color: var(--text-muted);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 6px; padding: 3px 10px;
+    }
+
+    /* ─── METRICS ─── */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 1.25rem;
+    }
+    .metric-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    }
+    .metric-card:hover { border-color: var(--border-hover); background: var(--card-hover); transform: translateY(-3px); }
+    .metric-icon { font-size: 22px; margin-bottom: 0.75rem; }
+    .metric-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .metric-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 30px; font-weight: 700; color: var(--text);
+      line-height: 1.1; margin: 0.5rem 0 0.35rem;
+    }
+    .metric-value .arrow { color: var(--text-faint); font-weight: 400; font-size: 20px; }
+    .metric-boost { font-size: 13px; font-weight: 600; color: var(--accent); }
+    .metric-note { font-size: 12px; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.5; }
+
+    /* ─── CALLOUT ─── */
+    .callout {
+      background: linear-gradient(135deg, rgba(0,196,204,0.06), rgba(129,140,248,0.05));
+      border: 1px solid var(--border-hover);
+      border-left: 3px solid var(--accent);
+      border-radius: 14px;
+      padding: 1.75rem 2rem;
+    }
+    .callout h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 17px; font-weight: 700; color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+    .callout p { font-size: 14.5px; color: var(--text-muted); line-height: 1.8; }
+    .callout p strong { color: var(--text); font-weight: 600; }
+    .callout p + p { margin-top: 0.85rem; }
+
+    /* ─── ARCHITECTURE ─── */
+    .arch {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+    .stage {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .stage::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+    .stage-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; color: var(--accent); font-weight: 500;
+    }
+    .stage h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px; font-weight: 700; color: var(--text);
+      margin: 0.4rem 0 0.65rem;
+    }
+    .stage p { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; }
+    .stage-stats { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.9rem; }
+    .stage-stats span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px; color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,196,204,0.18);
+      border-radius: 6px; padding: 3px 8px;
+    }
+
+    /* ─── FIGURE ─── */
+    .figure {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .figure img { width: 100%; display: block; }
+    .figure figcaption {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; color: var(--text-muted);
+      padding: 0.9rem 1.25rem; border-top: 1px solid var(--border);
+    }
+
+    /* ─── ABLATION TABLE ─── */
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 16px; }
+    table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 13.5px; }
+    thead th {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--accent); text-align: left;
+      padding: 0.85rem 1.1rem; background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td { padding: 0.75rem 1.1rem; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr.highlight td { background: var(--accent-dim); color: var(--text); }
+    tbody td strong { color: var(--text); font-weight: 600; }
+    .pos { color: var(--green); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      text-align: center;
+      padding: 2.25rem 2rem;
+      border-top: 1px solid var(--border);
+      font-size: 13px; color: var(--text-faint);
+    }
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      section { padding: 3rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-left">
+      <div class="nav-logo">GR<span>AFT</span></div>
+      <a href="../" class="nav-back">← Portfolio</a>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#results">Results</a></li>
+      <li><a href="#insight">Key Insight</a></li>
+      <li><a href="#method">Method</a></li>
+      <li><a href="#ablation">Ablation</a></li>
+      <li><a href="https://github.com/sid-raj-uc/GRAFT" target="_blank" class="nav-cta">GitHub</a></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <!-- ─── HERO ─── -->
+    <section id="hero">
+      <div class="hero-badge"><span></span>TTIC 31280 · Spring 2026 · Computer Vision</div>
+      <h1>GRAFT: Region-Grounded<br>Fine-Tuning of <span>SigLIP</span></h1>
+      <p class="hero-sub">
+        Vision-language models trained on global image–caption contrastive objectives know
+        <em>what</em> an image depicts, but not <em>where</em>. GRAFT teaches spatial grounding
+        into a frozen <strong>SigLIP-B/16-384</strong> using a tiny <strong>LoRA adapter (295K params, 0.14%)</strong>
+        and a FILIP-style region loss on phrase→bounding-box pairs — lifting Flickr30k Pointing Game
+        accuracy from a 14.74% baseline to 26.16% by eliminating train/eval representation mismatches.
+      </p>
+      <div class="hero-cta">
+        <a href="#results" class="btn btn-primary">View Results</a>
+        <a href="https://github.com/sid-raj-uc/GRAFT" target="_blank" class="btn btn-outline">GitHub</a>
+      </div>
+      <div class="tags">
+        <span class="tag">PyTorch</span>
+        <span class="tag">SigLIP-B/16-384</span>
+        <span class="tag">LoRA / PEFT</span>
+        <span class="tag">FILIP region loss</span>
+        <span class="tag">Flickr30k-Entities</span>
+        <span class="tag">Florence-2</span>
+        <span class="tag">W&amp;B</span>
+      </div>
+    </section>
+
+    <hr class="section-rule">
+
+    <!-- ─── RESULTS ─── -->
+    <section id="results">
+      <div class="section-label">// 01 &nbsp;results</div>
+      <div class="section-title">Pointing Game Gains</div>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon">🎯</div>
+          <div class="metric-label">Pointing Game (test)</div>
+          <div class="metric-value">14.74 <span class="arrow">→</span> 26.16<sup style="font-size:14px;color:var(--text-muted)">%</sup></div>
+          <div class="metric-boost">+11.4pp</div>
+          <div class="metric-note">5-epoch run on a 28,467-phrase held-out test set (~48σ signal).</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon">📊</div>
+          <div class="metric-label">Locked recipe (3-seed)</div>
+          <div class="metric-value">20.76 <span style="font-size:18px">± 0.41</span><sup style="font-size:14px;color:var(--text-muted)">%</sup></div>
+          <div class="metric-boost">+6.02pp · 6× lower variance</div>
+          <div class="metric-note">Verified mean over seeds {0,1,2} — the statistically robust headline.</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon">🪶</div>
+          <div class="metric-label">Trainable parameters</div>
+          <div class="metric-value">295K</div>
+          <div class="metric-boost">0.14% of the backbone</div>
+          <div class="metric-note">LoRA rank-4 adapters on the vision tower's q/v projections; backbone frozen.</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon">🤖</div>
+          <div class="metric-label">Auto-labeled (Florence-2)</div>
+          <div class="metric-value">23.35<sup style="font-size:14px;color:var(--text-muted)">%</sup></div>
+          <div class="metric-boost">zero human bounding boxes</div>
+          <div class="metric-note">Machine-generated phrase→bbox supervision nearly matches human labels.</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-rule">
+
+    <!-- ─── KEY INSIGHT ─── -->
+    <section id="insight">
+      <div class="section-label">// 02 &nbsp;key insight</div>
+      <div class="section-title">It Wasn't the Loss — It Was the Mismatch</div>
+      <div class="callout">
+        <h3>The dominant gain came from aligning train-time and eval-time representations, not from loss design or model capacity.</h3>
+        <p>
+          Early versions trained patch features through the full self-attention layer but evaluated them
+          through a <strong>MaskCLIP bypass</strong>, and represented phrases by a mean over all tokens while
+          eval used only the <strong>EOS token</strong>. The gradient was sharpening the wrong vectors.
+        </p>
+        <p>
+          Installing the MaskCLIP bypass <strong>during training</strong> (vision side) flipped the model from
+          <em>below</em> baseline to <strong>+3.94pp</strong> on the 3-seed mean. Switching the region loss to the
+          <strong>EOS phrase feature</strong> (text side) added <strong>+2.08pp</strong> and collapsed seed variance
+          <strong>6×</strong>. Doubling the region-loss weight, adding LoRA capacity, and reformulating the patch
+          aggregation all moved the mean within noise — the representation mismatch was the real lever.
+        </p>
+      </div>
+    </section>
+
+    <hr class="section-rule">
+
+    <!-- ─── METHOD ─── -->
+    <section id="method">
+      <div class="section-label">// 03 &nbsp;method</div>
+      <div class="section-title">Recipe</div>
+      <div class="arch">
+        <div class="stage">
+          <div class="stage-num">01</div>
+          <h3>Frozen Backbone + LoRA</h3>
+          <p>SigLIP-B/16-384 stays frozen (729 patches, 27×27 grid). A rank-4 LoRA adapter on the vision-tower q/v projections carries all trainable capacity.</p>
+          <div class="stage-stats"><span>rank 4 · α 16</span><span>q_proj + v_proj</span><span>295K params</span></div>
+        </div>
+        <div class="stage">
+          <div class="stage-num">02</div>
+          <h3>Global + Region Loss</h3>
+          <p>Sigmoid-SigLIP global loss on pooled image ↔ caption, plus a FILIP-style region loss between EOS phrase features and in-bbox patch features, max-pooled per image.</p>
+          <div class="stage-stats"><span>λ_region = 0.5</span><span>FILIP max-pool</span><span>bf16 autocast</span></div>
+        </div>
+        <div class="stage">
+          <div class="stage-num">03</div>
+          <h3>Representation Alignment</h3>
+          <p>MaskCLIP attention bypass on the vision side and EOS-token features on the text side make the training path byte-for-byte identical to the eval path. A best-PG snapshot restores the peak checkpoint.</p>
+          <div class="stage-stats"><span>MaskCLIP bypass</span><span>EOS alignment</span><span>best-PG snapshot</span></div>
+        </div>
+      </div>
+
+      <figure class="figure" style="margin-top:2rem">
+        <img src="./screenshot.png" alt="Florence-2 region annotations on a Flickr30k image">
+        <figcaption>Florence-2 dense-region-caption annotations used to auto-generate phrase→bbox supervision for the human-free M_auto track.</figcaption>
+      </figure>
+    </section>
+
+    <hr class="section-rule">
+
+    <!-- ─── ABLATION ─── -->
+    <section id="ablation">
+      <div class="section-label">// 04 &nbsp;ablation</div>
+      <div class="section-title">Baseline → Locked Recipe → Multi-Epoch</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Version</th><th>Change</th><th>Pointing Game</th><th>Δ vs B0</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>B0</strong></td><td>Frozen SigLIP baseline</td><td>14.74%</td><td>—</td></tr>
+            <tr><td>v2</td><td>+ MaskCLIP bypass during training</td><td>+3.94% (3-seed mean)</td><td class="pos">+3.94</td></tr>
+            <tr class="highlight"><td><strong>v10</strong></td><td>+ EOS-aligned region loss + best-PG snapshot (locked, 3-seed)</td><td><strong>20.76 ± 0.41%</strong></td><td class="pos"><strong>+6.02</strong></td></tr>
+            <tr><td>v11</td><td>5 epochs, per-epoch cosine restarts (single seed)</td><td>26.16% (test)</td><td class="pos">+11.42</td></tr>
+            <tr><td>M_auto</td><td>Florence-2 caption-grounded phrases (no human boxes)</td><td>23.35%</td><td class="pos">+8.61</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>GRAFT — Region-Grounded Fine-Tuning of SigLIP &nbsp;·&nbsp; Siddharth Raj &amp; Aniket Agrawal &nbsp;·&nbsp;
+      <a href="../">← Back to Portfolio</a>
+    </p>
+  </footer>
+
+</body>
+</html>

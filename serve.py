@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Local dev server with the COOP/COEP headers ONNX Runtime Web needs."""
 import os
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer as HTTPServer, SimpleHTTPRequestHandler
 
 class Handler(SimpleHTTPRequestHandler):
     def end_headers(self):
